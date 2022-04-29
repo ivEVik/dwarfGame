@@ -11,10 +11,17 @@ namespace dwarfGame
 		[STAThread]
 		static void Main()
 		{
-			Application.SetHighDpiMode(HighDpiMode.SystemAware);
-			Application.EnableVisualStyles();
-			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new Form1());
+			Initialise(3);
+			Game.MakeMapFromString();
+			
+			Application.Run(new MainForm());
+		}
+		
+		private static void Initialise(int scale)
+		{
+			Game.Initialise(scale);
+			Sprites.Initialise();
+			MapMaker.Initialise();
 		}
 	}
 }

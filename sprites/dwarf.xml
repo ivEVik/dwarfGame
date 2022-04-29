@@ -1,0 +1,32 @@
+<animations>
+	<anim>
+		<action>idle</action>
+		<dir>0</dir>
+		<frames>
+			<frame>
+				<image>dwarf-idle-0</image>
+				<delay>100</delay>
+			</frame>
+			<frame>
+				<image>dwarf-idle-1</image>
+				<delay>3</delay>
+			</frame>
+			<frame>
+				<image>dwarf-idle-2</image>
+				<delay>30</delay>
+			</frame>
+			<frame>
+				<image>dwarf-idle-1</image>
+				<delay>3</delay>
+			</frame>
+			<frame>
+				<image>dwarf-idle-3</image>
+				<delay>3</delay>
+			</frame>
+			<frame>
+				<image>dwarf-idle-1</image>
+				<delay>3</delay>
+			</frame>
+		</frames>
+	</anim>
+</animations>
