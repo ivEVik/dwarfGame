@@ -21,7 +21,7 @@ namespace dwarfGame
 		{
 			drag = false;
 			cursorLoc = new Point(0, 0);
-			camera = new Point(Game.DiagLength / 2, Game.DiagLength / 4);
+			camera = new Point(Game.DiagLength / 2 + Game.MapX * Game.ElementSize / 2, Game.DiagLength / 4);
 			
 			ClientSize = new Size(Game.DiagLength, Game.DiagLength / 2);
 			FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -49,7 +49,7 @@ namespace dwarfGame
 		{
 			foreach(Tile tile in Game.MapOrdered)
 			{
-				Point point = new Point((tile.X - tile.Y) * Game.Horizontal + Game.SideShift + camera.X, (tile.X + tile.Y) * Game.Vertical + camera.Y);
+				Point point = new Point((tile.X - tile.Y) * Game.Horizontal + camera.X, (tile.X + tile.Y) * Game.Vertical + camera.Y);
 				e.Graphics.DrawImage(Sprites.GetTile(tile.SpriteID), point);
 				
 				if(tile.Mobs.Count > 0)

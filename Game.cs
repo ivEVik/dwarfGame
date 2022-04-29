@@ -25,7 +25,6 @@ namespace dwarfGame
 		public static int Horizontal;
 		public static int Vertical;
 		public static int DiagLength;
-		public static int SideShift;
 		
 		public static void Process()
 		{
@@ -53,8 +52,7 @@ namespace dwarfGame
 			Mobs.Add(mob);
 			Map[mob.X, mob.Y].AddMob(mob);
 			
-			SideShift = Game.MapX * ElementSize / 2;
-			DiagLength = (int)Math.Sqrt(Game.MapX * ElementSize * Game.MapX * ElementSize + Game.MapY * ElementSize * Game.MapY * ElementSize);
+			DiagLength = (int)Math.Sqrt(MapX * ElementSize * MapX * ElementSize + MapY * ElementSize * MapY * ElementSize);
 		}
 	}
 }
