@@ -34,6 +34,13 @@ namespace dwarfGame
 			Mobs = new List<Mob>();
 		}
 		
+		public bool CheckFlag(int flag)
+		{
+			if((Flags & flag) == flag)
+				return true;
+			return false;
+		}
+		
 		public void RemoveMob(Mob mob)
 		{
 			Mobs.Remove(mob);

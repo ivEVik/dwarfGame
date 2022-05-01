@@ -12,6 +12,7 @@ namespace dwarfGame
 	{
 		private static Dictionary<string, Bitmap> tileBitmaps;
 		private static Dictionary<string, Bitmap> mobBitmaps;
+		private static Dictionary<string, Bitmap> overlayBitmaps;
 		
 		public static int SpriteSize;
 		
@@ -20,9 +21,13 @@ namespace dwarfGame
 			SpriteSize = 32 * Game.Scale;
 			tileBitmaps = new Dictionary<string, Bitmap>();
 			mobBitmaps = new Dictionary<string, Bitmap>();
+			overlayBitmaps = new Dictionary<string, Bitmap>();
+			
 			DirectoryInfo[] directories = new DirectoryInfo("sprites").GetDirectories();
+			
 			TileInit(Array.Find(directories, dir => dir.Name == "tiles"));
 			MobInit(Array.Find(directories, dir => dir.Name == "mobs"));
+			OverlayInit(Array.Find(directories, dir => dir.Name == "overlays"));
 		}
 		
 		public static Bitmap GetTile(string id, string type = "")
@@ -41,6 +46,13 @@ namespace dwarfGame
 			if(mobBitmaps.ContainsKey(id))
 				return mobBitmaps[id];
 			return mobBitmaps[CONST.MOB_DUMMY];
+		}
+		
+		public static Bitmap GetOverlay(string id)
+		{
+			if(overlayBitmaps.ContainsKey(id))
+				return overlayBitmaps[id];
+			return overlayBitmaps[CONST.OVERLAY_NULL];
 		}
 		
 		public static Dictionary<string, Dictionary<int, Tuple<string, int>[]>> GetSprites(string id)
@@ -83,6 +95,15 @@ namespace dwarfGame
 			mobBitmaps = dir
 				.GetDirectories()
 				.SelectMany(dir => dir.GetFiles("*.png"))
+				.ToDictionary(
+					file => file.Name.Substring(0, file.Name.Length - 4),
+					file => GetAndScaleImage(file.FullName, SpriteSize));
+		}
+		
+		private static void OverlayInit(DirectoryInfo dir)
+		{
+			overlayBitmaps = dir
+				.GetFiles("*.png")
 				.ToDictionary(
 					file => file.Name.Substring(0, file.Name.Length - 4),
 					file => GetAndScaleImage(file.FullName, SpriteSize));

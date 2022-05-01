@@ -10,7 +10,7 @@ namespace dwarfGame
 		
 		public static void Initialise()
 		{
-			tileDict.Add('.', Tuple.Create(FLAG.TILE_PASSABLE & FLAG.TILE_SELECTABLE, CONST.TILE_BRICK));
+			tileDict.Add('.', Tuple.Create(FLAG.TILE_PASSABLE | FLAG.TILE_SELECTABLE, CONST.TILE_BRICK));
 			//tileDict['#'] = FLAG.SELECTABLE;
 			//tileFlagDict['E'] = FLAG.PASSABLE + FLAG.SELECTABLE;
 			tileDict.Add(' ', Tuple.Create(0, CONST.TILE_NULL));

@@ -22,6 +22,7 @@ namespace dwarfGame
 			drag = false;
 			cursorLoc = new Point(0, 0);
 			camera = new Point(Game.DiagLength / 2 + Game.MapX * Game.ElementSize / 2, Game.DiagLength / 4);
+			//camera = new Point(0, 0);
 			
 			ClientSize = new Size(Game.DiagLength, Game.DiagLength / 2);
 			FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -47,14 +48,65 @@ namespace dwarfGame
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
+			List<Mob> mobs = new List<Mob>();
+			
+			DrawTiles(e, mobs);
+			DrawCursor(e);
+			DrawMobs(e, mobs);
+		}
+		
+		private void DrawTiles(PaintEventArgs e, List<Mob> mobs)
+		{
 			foreach(Tile tile in Game.MapOrdered)
 			{
-				Point point = new Point((tile.X - tile.Y) * Game.Horizontal + camera.X, (tile.X + tile.Y) * Game.Vertical + camera.Y);
-				e.Graphics.DrawImage(Sprites.GetTile(tile.SpriteID), point);
+				//Point point = new Point((tile.X - tile.Y) * Game.Horizontal + camera.X, (tile.X + tile.Y) * Game.Vertical + camera.Y);
+				e.Graphics.DrawImage(Sprites.GetTile(tile.SpriteID), MapToScreen(tile.X, tile.Y));
 				
 				if(tile.Mobs.Count > 0)
-					e.Graphics.DrawImage(tile.Mobs[0].GetSprite(), point);
+					mobs.Add(tile.Mobs[0]);
 			}
+		}
+		
+		private void DrawCursor(PaintEventArgs e)
+		{
+			Point xy = ScreenToMap(cursorLoc.X - camera.X - Game.Horizontal, cursorLoc.Y - camera.Y - Game.Horizontal);
+			
+			if(xy.X > -1 && xy.X < Game.MapX && xy.Y > -1 && xy.Y < Game.MapY && Game.Map[xy.X, xy.Y].CheckFlag(FLAG.TILE_SELECTABLE))
+			{
+				Tile tile = Game.Map[xy.X, xy.Y];
+				if(tile.Mobs.Count > 0)
+					e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_HOVER_MOB), MapToScreen(tile.X, tile.Y));
+				else
+					e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_HOVER), MapToScreen(tile.X, tile.Y));
+			}
+		}
+		
+		private void DrawMobs(PaintEventArgs e, List<Mob> mobs)
+		{
+			foreach(Mob mob in mobs)
+				e.Graphics.DrawImage(mob.GetSprite(), MapToScreen(mob.X, mob.Y));
+		}
+		
+		private Point MapToScreen(int x, int y)
+		{
+			return new Point((x - y) * Game.Horizontal + camera.X, (x + y) * Game.Vertical + camera.Y);
+		}
+		
+		private Point ScreenToMap(int x, int y)
+		{
+			if(y * 2 < Math.Abs(x))
+				return new Point(-1, -1);
+			
+			Point result = new Point();
+			result.X = (int)((double)x / Game.Horizontal + (double)y / Game.Vertical) / 2;
+			result.Y = (int)((double)y / Game.Vertical - (double)x / Game.Horizontal) / 2;
+			
+			return result;
+		}
+		
+		private Point ScreenToMap(Point point)
+		{
+			return ScreenToMap(point.X, point.Y);
 		}
 		
 		private void MouseMoved(object sender, MouseEventArgs e)
