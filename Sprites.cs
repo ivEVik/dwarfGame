@@ -30,29 +30,29 @@ namespace dwarfGame
 			OverlayInit(Array.Find(directories, dir => dir.Name == "overlays"));
 		}
 		
-		public static Bitmap GetTile(string id, string type = "")
-		{
-			if(tileBitmaps.ContainsKey(id + type))
-				return tileBitmaps[id + type];
-			
-			if(tileBitmaps.ContainsKey(id))
-				return tileBitmaps[id];
-			
-			return tileBitmaps[CONST.TILE_NULL];
-		}
-		
-		public static Bitmap GetMob(string id)
-		{
-			if(mobBitmaps.ContainsKey(id))
-				return mobBitmaps[id];
-			return mobBitmaps[CONST.MOB_DUMMY];
-		}
-		
 		public static Bitmap GetOverlay(string id)
 		{
 			if(overlayBitmaps.ContainsKey(id))
 				return overlayBitmaps[id];
 			return overlayBitmaps[CONST.OVERLAY_NULL];
+		}
+		
+		public static Bitmap GetSprite(Mob mob)
+		{
+			string id = mob.Sheet.GetFrameID();
+			
+			if(mobBitmaps.ContainsKey(id))
+				return mobBitmaps[id];
+			return mobBitmaps[CONST.MOB_DUMMY];
+		}
+		
+		public static Bitmap GetSprite(Tile tile)
+		{
+			string id = tile.SpriteID;
+			
+			if(tileBitmaps.ContainsKey(id))
+				return tileBitmaps[id];
+			return tileBitmaps[CONST.TILE_NULL];
 		}
 		
 		public static Dictionary<string, Dictionary<int, Tuple<string, int>[]>> GetSprites(string id)

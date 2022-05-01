@@ -23,52 +23,17 @@ namespace dwarfGame
 				.Select(row => row.ToCharArray())
 				.ToArray();
 			
-			if(rows.Select(row => row.Length).Distinct().Count() != 1 || rows.Count() != rows[0].Length)
+			if(rows.Select(row => row.Length).Distinct().Count() != 1)
 				throw new Exception($"Invalid source string: '{source}'");
 			
-			int xLength = rows[0].Count();
-			int yLength = rows.Count();
-			int tileCount = xLength * yLength;
+			Game.MapX = rows[0].Count();
+			Game.MapY = rows.Count();
 			
-			Game.Map = new Tile[xLength, yLength];
-			Game.MapOrdered = new Tile[tileCount];
+			Game.Map = new Tile[Game.MapX, Game.MapY];
 			
-			int y = 0;
-			int triangleOne = (int)Math.Ceiling(tileCount / 2.0);
-			int t = 0;
-			
-			while(t < triangleOne)
-			{
-				for(int i = y; i >= 0; i--)
-				{
-					int tempX = y - i;
-					//Tile tile = new Tile(tileDict[rows[tempX][i]], tempX, i);
-					Tile tile = new Tile(tileDict[rows[i][tempX]], tempX, i);
-					Game.Map[tempX, i] = tile;
-					Game.MapOrdered[t++] = tile;
-				}
-				
-				y++;
-			}
-			
-			y--;
-			int x = 0;
-			
-			while(t < tileCount)
-			{
-				int tempX = x;
-				
-				for(int i = y; i > x; i--)
-				{
-					tempX++;
-					//Tile tile = new Tile(tileDict[rows[tempX][i]], tempX, i);
-					Tile tile = new Tile(tileDict[rows[i][tempX]], tempX, i);
-					Game.Map[tempX, i] = tile;
-					Game.MapOrdered[t++] = tile;
-				}
-				
-				x++;
-			}
+			for(int y = 0; y < Game.MapY; y++)
+				for(int x = 0; x < Game.MapX; x++)
+					Game.Map[x, y] = new Tile(tileDict[rows[y][x]], x, y);
 		}
 	}
 }

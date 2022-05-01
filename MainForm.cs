@@ -57,14 +57,15 @@ namespace dwarfGame
 		
 		private void DrawTiles(PaintEventArgs e, List<Mob> mobs)
 		{
-			foreach(Tile tile in Game.MapOrdered)
-			{
-				//Point point = new Point((tile.X - tile.Y) * Game.Horizontal + camera.X, (tile.X + tile.Y) * Game.Vertical + camera.Y);
-				e.Graphics.DrawImage(Sprites.GetTile(tile.SpriteID), MapToScreen(tile.X, tile.Y));
-				
-				if(tile.Mobs.Count > 0)
-					mobs.Add(tile.Mobs[0]);
-			}
+			for(int y = 0; y < Game.MapY; y++)
+				for(int x = 0; x < Game.MapX; x++)
+				{
+					Tile tile = Game.Map[x, y];
+					e.Graphics.DrawImage(Sprites.GetSprite(tile), MapToScreen(x, y));
+					
+					if(tile.Mobs.Count > 0)
+						mobs.Add(tile.Mobs[0]);
+				}
 		}
 		
 		private void DrawCursor(PaintEventArgs e)
@@ -84,7 +85,7 @@ namespace dwarfGame
 		private void DrawMobs(PaintEventArgs e, List<Mob> mobs)
 		{
 			foreach(Mob mob in mobs)
-				e.Graphics.DrawImage(mob.GetSprite(), MapToScreen(mob.X, mob.Y));
+				e.Graphics.DrawImage(Sprites.GetSprite(mob), MapToScreen(mob.X, mob.Y));
 		}
 		
 		private Point MapToScreen(int x, int y)

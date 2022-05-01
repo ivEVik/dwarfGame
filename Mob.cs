@@ -6,7 +6,7 @@ namespace dwarfGame
 {
 	public class Mob
 	{
-		private Spritesheet spritesheet;
+		public Spritesheet Sheet;
 		public string Name;
 		
 		public int Dir;
@@ -21,20 +21,15 @@ namespace dwarfGame
 		{
 			Name = name;
 			Dir = dir;
-			spritesheet = new Spritesheet(id);
-			spritesheet.StartAnimation(CONST.ACTION_IDLE, dir);
+			Sheet = new Spritesheet(id);
+			Sheet.StartAnimation(CONST.ACTION_IDLE, dir);
 			MaxMovement = movement;
 			Movement = movement;
 		}
 		
-		public Bitmap GetSprite()
-		{
-			return spritesheet.GetFrame();
-		}
-		
 		public void Process()
 		{
-			spritesheet.Process();
+			Sheet.Process();
 		}
 		
 		/*public void Move(List<int> path)

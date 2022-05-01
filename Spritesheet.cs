@@ -44,9 +44,9 @@ namespace dwarfGame
 				IncrementFrame();
 		}
 		
-		public Bitmap GetFrame()
+		public string GetFrameID()
 		{
-			return Sprites.GetMob(sprites[action][dir][frame].Item1);
+			return sprites[action][dir][frame].Item1;
 		}
 		
 		private void IncrementFrame()

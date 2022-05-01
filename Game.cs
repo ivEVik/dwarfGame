@@ -16,7 +16,6 @@ namespace dwarfGame
 		public static Tile[,] Map;
 		public static int MapX;
 		public static int MapY;
-		public static Tile[] MapOrdered;
 		
 		public static List<Mob> Mobs;
 		//public static Mob SelectedMob;
@@ -44,8 +43,8 @@ namespace dwarfGame
 		{
 			Mobs = new List<Mob>();
 			MapMaker.MakeMapFromString(mapTestPreset);
-			MapX = Map.GetLength(0);
-			MapY = Map.GetLength(1);
+			//MapX = Map.GetLength(0);
+			//MapY = Map.GetLength(1);
 			Mob mob = new Mob("Urist", CONST.MOB_DWARF, CONST.DIR_SOUTH, 3);
 			mob.X = 2;
 			mob.Y = 2;
