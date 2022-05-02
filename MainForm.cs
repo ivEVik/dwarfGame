@@ -141,7 +141,7 @@ namespace dwarfGame
 			if(e.Button == MouseButtons.Left)
 			{
 				Point xy = ScreenToMap(e.X, e.Y);
-				if(xy.X >= 0 || xy.Y >= 0)
+				if(xy.X >= 0 && xy.Y >= 0 && xy.X < Game.MapX && xy.Y < Game.MapY)
 				{
 					Tile tile = Game.Map[xy.X, xy.Y];
 					if(tile.Mobs.Count > 0)
