@@ -41,6 +41,39 @@ namespace dwarfGame
 			return false;
 		}
 		
+		public IEnumerable<Tile> GetNeighbours()
+		{
+			if(X > 0)
+				yield return Game.Map[X - 1, Y];
+			if(X < Game.MapX - 1)
+				yield return Game.Map[X + 1, Y];
+			if(Y > 0)
+				yield return Game.Map[X, Y - 1];
+			if(Y < Game.MapY - 1)
+				yield return Game.Map[X, Y + 1];
+		}
+		
+		public override bool Equals(object obj)
+		{
+			if(!(obj is Tile))
+				return false;
+			
+			Tile tile = obj as Tile;
+			if(X == tile.X && Y == tile.Y)
+				return true;
+			return false;
+		}
+		
+		public override int GetHashCode()
+		{
+			return new Point(X, Y).GetHashCode();
+		}
+		
+		public bool IsPassable()
+		{
+			return CheckFlag(FLAG.TILE_PASSABLE) && Mobs.Count == 0;
+		}
+		
 		public void RemoveMob(Mob mob)
 		{
 			Mobs.Remove(mob);

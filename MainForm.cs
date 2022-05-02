@@ -65,12 +65,15 @@ namespace dwarfGame
 					
 					if(tile.Mobs.Count > 0)
 						mobs.Add(tile.Mobs[0]);
+					
+					if(Game.SelectedMob != null && Game.SelectedMob.CanPath(tile))
+					e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_PATH), MapToScreen(x, y));
 				}
 		}
 		
 		private void DrawCursor(PaintEventArgs e)
 		{
-			Point xy = ScreenToMap(cursorLoc.X - camera.X - Game.Horizontal, cursorLoc.Y - camera.Y - Game.Horizontal);
+			Point xy = ScreenToMap(cursorLoc.X, cursorLoc.Y);
 			
 			if(xy.X > -1 && xy.X < Game.MapX && xy.Y > -1 && xy.Y < Game.MapY && Game.Map[xy.X, xy.Y].CheckFlag(FLAG.TILE_SELECTABLE))
 			{
@@ -79,6 +82,13 @@ namespace dwarfGame
 					e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_HOVER_MOB), MapToScreen(tile.X, tile.Y));
 				else
 					e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_HOVER), MapToScreen(tile.X, tile.Y));
+				
+				if(Game.SelectedMob != null && Game.SelectedMob.CanPath(tile))
+				{
+					List<Tile> path = Game.SelectedMob.Path(tile);
+					foreach(Tile t in path)
+						e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_PATH_ACTIVE), MapToScreen(t.X, t.Y));
+				}
 			}
 		}
 		
@@ -95,6 +105,8 @@ namespace dwarfGame
 		
 		private Point ScreenToMap(int x, int y)
 		{
+			x -= camera.X + Game.Horizontal;
+			y -= camera.Y + Game.Horizontal;
 			if(y * 2 < Math.Abs(x))
 				return new Point(-1, -1);
 			
@@ -125,6 +137,19 @@ namespace dwarfGame
 		{
 			if(e.Button == MouseButtons.Right)
 				drag = true;
+			
+			if(e.Button == MouseButtons.Left)
+			{
+				Point xy = ScreenToMap(e.X, e.Y);
+				if(xy.X >= 0 || xy.Y >= 0)
+				{
+					Tile tile = Game.Map[xy.X, xy.Y];
+					if(tile.Mobs.Count > 0)
+						Game.SelectedMob = tile.Mobs[0];
+					else
+						Game.SelectedMob = null;
+				}
+			}
 		}
 		
 		private void MouseReleased(object sender, MouseEventArgs e)

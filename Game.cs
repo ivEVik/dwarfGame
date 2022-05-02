@@ -18,7 +18,7 @@ namespace dwarfGame
 		public static int MapY;
 		
 		public static List<Mob> Mobs;
-		//public static Mob SelectedMob;
+		public static Mob SelectedMob;
 		
         public static int ElementSize;
 		public static int Horizontal;
