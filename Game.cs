@@ -45,9 +45,7 @@ namespace dwarfGame
 			MapMaker.MakeMapFromString(mapTestPreset);
 			//MapX = Map.GetLength(0);
 			//MapY = Map.GetLength(1);
-			Mob mob = new Mob("Urist", CONST.MOB_DWARF, CONST.DIR_SOUTH, 3);
-			mob.X = 2;
-			mob.Y = 2;
+			Mob mob = new Mob("Urist", CONST.MOB_DWARF, CONST.DIR_SOUTH, 3, 2, 2);
 			Mobs.Add(mob);
 			Map[mob.X, mob.Y].AddMob(mob);
 			

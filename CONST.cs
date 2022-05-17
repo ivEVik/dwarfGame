@@ -25,5 +25,6 @@ namespace dwarfGame
 		public const string OVERLAY_HOVER_MOB = "tile-hover-blue";
 		public const string OVERLAY_PATH = "tile-path-white";
 		public const string OVERLAY_PATH_ACTIVE = "tile-path-blue";
+		public const string OVERLAY_SHADOW = "mob-shadow";
 	}
 }

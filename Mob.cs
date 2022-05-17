@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,8 +6,13 @@ namespace dwarfGame
 {
 	public class Mob
 	{
+		private List<Tile> movePath;
+		
 		public Spritesheet Sheet;
 		public string Name;
+		
+		public int Health;
+		public bool Action;
 		
 		public int Dir;
 		public int MaxMovement;
@@ -18,11 +22,16 @@ namespace dwarfGame
 		
 		public Mob() {}
 		
-		public Mob(string name, string id, int dir, int movement)
+		public Mob(string name, string id, int dir, int movement, int x, int y)
 		{
+			X = x;
+			Y = y;
+			movePath = new List<Tile>();
 			Name = name;
 			Dir = dir;
 			Sheet = new Spritesheet(id);
+			Sheet.SetCoords(X, Y);
+			Sheet.SetDestination(X, Y);
 			Sheet.StartAnimation(CONST.ACTION_IDLE, dir);
 			MaxMovement = movement;
 			Movement = movement;
@@ -30,6 +39,7 @@ namespace dwarfGame
 		
 		public void Process()
 		{
+			TryMove();
 			Sheet.Process();
 		}
 		
@@ -95,52 +105,54 @@ namespace dwarfGame
 			return Math.Abs(X - x) + Math.Abs(Y - y);
 		}
 		
-		/*public void Move(List<int> path)
-		{
-			if(path.Count() > Movement)
-				return;
-			
-			foreach(int t in path)
-				switch(t)
-				{
-					case is DIR.NORTH:
-						if(Y == 0)
-							break;
-						Move(GetTile(), Game.Map[X, --Y]);
-						break;
-					case is DIR.SOUTH:
-						if(Y == Game.MapSizeY - 1)
-							break;
-						Move(GetTile(), Game.Map[X, ++Y]);
-						break;
-					case is DIR.EAST:
-						if(X == Game.MapSizeX - 1)
-							break;
-						Move(GetTile(), Game.Map[++X, Y]);
-						break;
-					case is DIR.WEST:
-						if(Y == 0)
-							break;
-						Move(GetTile(), Game.Map[--X, ++Y]);
-						break;
-					default:
-						throw new Exception($"Invalid direction: {t}");
-				}
-		}*/
-		
 		public Tile GetTile()
 		{
 			return Game.Map[X, Y];
 		}
 		
-		/*private void Move(Tile sourceTile, Tile targetTile)
+		public void Move(List<Tile> path)
 		{
-			if(!(targetTile.Flags & FLAG.PASSABLE))
+			if(path.Count() > Movement)
+				return;
+			
+			movePath = path;
+		}
+		
+		private void TryMove()
+		{ 
+			if(movePath.Count() == 0 || Sheet.IsLocked())
+				return;
+			
+			Move(movePath.FirstOrDefault());
+			movePath.Remove(movePath.FirstOrDefault());
+			
+			if(movePath.Count() == 0 && Sheet.IsLocked())
+			{
+				Sheet.PrepIdle = true;
+				return;
+			}
+		}
+		
+		private void Move(Tile tile)
+		{
+			if(!tile.IsPassable())
 				throw new Exception("Invalid target tile.");
 			
-			sourceTile.RemoveMob(this);
-			targetTile.AddMob(this);
+			Dir = GetDir(tile);
+			
+			GetTile().RemoveMob(this);
+			tile.AddMob(this);
+			
+			if(Sheet.GetDir() != Dir || Sheet.GetAction() != CONST.ACTION_MOVE)
+				Sheet.StartAnimation(CONST.ACTION_MOVE, Dir, true);
+			
+			Sheet.SetDestination(X, Y);
 			Movement--;
-		}*/
+		}
+		
+		private int GetDir(Tile tile)
+		{
+			return GetTile().GetDir(tile);
+		}
 	}
 }

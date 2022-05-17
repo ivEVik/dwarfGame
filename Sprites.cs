@@ -15,10 +15,21 @@ namespace dwarfGame
 		private static Dictionary<string, Bitmap> overlayBitmaps;
 		
 		public static int SpriteSize;
+		public static int IncX;
+		public static int IncY;
 		
 		public static void Initialise()
 		{
 			SpriteSize = 32 * Game.Scale;
+			
+			var div = 16;
+			if(SpriteSize > 32 && Game.Scale % 2 == 0)
+				div = 32;
+			else if(SpriteSize > 32)
+				div = 48;
+			
+			IncX = SpriteSize / div;
+			IncY = IncX / 2;
 			tileBitmaps = new Dictionary<string, Bitmap>();
 			mobBitmaps = new Dictionary<string, Bitmap>();
 			overlayBitmaps = new Dictionary<string, Bitmap>();
@@ -71,7 +82,9 @@ namespace dwarfGame
 				int dir = int.Parse(anim["dir"].InnerText);
 				XmlNodeList frames = anim["frames"].ChildNodes;
 				
-				sprites[action] = new Dictionary<int, Tuple<string, int>[]>();
+				if(!sprites.ContainsKey(action))
+					sprites[action] = new Dictionary<int, Tuple<string, int>[]>();
+				
 				sprites[action][dir] = new Tuple<string, int>[frames.Count];
 				
 				for(int t = 0; t < frames.Count; t++)

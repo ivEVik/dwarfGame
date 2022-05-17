@@ -12,14 +12,18 @@ namespace dwarfGame
 {
 	public class MainForm : Form
 	{
+		private int movInc;
 		private Timer timer;
 		private bool drag;
+		private bool dragStart;
 		private Point camera;
 		private Point cursorLoc;
 		
 		public MainForm()
 		{
+			movInc = Sprites.SpriteSize / 16;
 			drag = false;
+			dragStart = false;
 			cursorLoc = new Point(0, 0);
 			camera = new Point(Game.DiagLength / 2 + Game.MapX * Game.ElementSize / 2, Game.DiagLength / 4);
 			//camera = new Point(0, 0);
@@ -36,6 +40,7 @@ namespace dwarfGame
 			
 			MouseMove += (sender, e) => MouseMoved(sender, e);
 			MouseDown += (sender, e) => MousePressed(sender, e);
+			MouseClick += (sender, e) => MouseClicked(sender, e);
 			MouseUp += (sender, e) => MouseReleased(sender, e);
 		}
 		
@@ -95,7 +100,11 @@ namespace dwarfGame
 		private void DrawMobs(PaintEventArgs e, List<Mob> mobs)
 		{
 			foreach(Mob mob in mobs)
-				e.Graphics.DrawImage(Sprites.GetSprite(mob), MapToScreen(mob.X, mob.Y));
+			{
+				Point point = new Point(mob.Sheet.Coords.X + camera.X, mob.Sheet.Coords.Y + camera.Y);
+				e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_SHADOW), point);
+				e.Graphics.DrawImage(Sprites.GetSprite(mob), point);
+			}
 		}
 		
 		private Point MapToScreen(int x, int y)
@@ -128,6 +137,7 @@ namespace dwarfGame
 			{
 				camera.X += e.X - cursorLoc.X;
 				camera.Y += e.Y - cursorLoc.Y;
+				dragStart = true;
 			}
 			cursorLoc.X = e.X;
 			cursorLoc.Y = e.Y;
@@ -146,8 +156,6 @@ namespace dwarfGame
 					Tile tile = Game.Map[xy.X, xy.Y];
 					if(tile.Mobs.Count > 0)
 						Game.SelectedMob = tile.Mobs[0];
-					else
-						Game.SelectedMob = null;
 				}
 			}
 		}
@@ -155,7 +163,30 @@ namespace dwarfGame
 		private void MouseReleased(object sender, MouseEventArgs e)
 		{
 			if(e.Button == MouseButtons.Right)
+			{
 				drag = false;
+				dragStart = false;
+			}
+		}
+		
+		private void MouseClicked(object sender, MouseEventArgs e)
+		{
+			if(e.Button == MouseButtons.Right && Game.SelectedMob != null && !dragStart)
+				Game.SelectedMob = null;
+			
+			Point xy = ScreenToMap(cursorLoc);
+			if(e.Button == MouseButtons.Left && Game.SelectedMob != null && ValidTile(xy) && Game.SelectedMob.CanPath(Game.Map[xy.X, xy.Y]))
+				Game.SelectedMob.Move(Game.SelectedMob.Path(Game.Map[xy.X, xy.Y]));
+		}
+		
+		private bool ValidTile(Point point)
+		{
+			return ValidTile(point.X, point.Y);
+		}
+		
+		private bool ValidTile(int x, int y)
+		{
+			return x >= 0 && y >= 0 && x < Game.MapX && y < Game.MapY;
 		}
 	}
 }

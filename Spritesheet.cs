@@ -9,22 +9,49 @@ namespace dwarfGame
 		private Dictionary<string, Dictionary<int, Tuple<string, int>[]>> sprites;
 		private string action;
 		private int dir;
+		private int drawDir;
 		private int frame;
 		private int tickCount;
+		private bool locked;
+		private bool mov;
+		
+		public bool PrepIdle;
+		public Point Coords;
+		public Point Destination;
 		
 		public Spritesheet(string id)
 		{
 			sprites = Sprites.GetSprites(id);
 			action = CONST.ACTION_IDLE;
 			dir = CONST.DIR_SOUTH;
+			drawDir = CONST.DIR_SOUTH;
 			frame = 0;
 			tickCount = 0;
+			locked = false;
+			mov = false;
 		}
 		
-		public void StartAnimation(string act, int direction)
+		public void SetDestination(int x, int y)
+		{
+			Destination = new Point((x - y) * Game.Horizontal, (x + y) * Game.Vertical);
+			
+			if(Destination != Coords)
+			{
+				mov = true;
+				locked = true;
+			}
+		}
+		
+		public void SetCoords(int x, int y)
+		{
+			Coords = new Point((x - y) * Game.Horizontal, (x + y) * Game.Vertical);
+		}
+		
+		public void StartAnimation(string act, int direction, bool doLock = false)
 		{
 			frame = 0;
 			tickCount = 0;
+			dir = direction;
 			
 			if(sprites.ContainsKey(act))
 				action = act;
@@ -32,31 +59,83 @@ namespace dwarfGame
 				action = CONST.ACTION_IDLE;
 			
 			if(sprites[action].ContainsKey(direction))
-				dir = direction;
+				drawDir = dir;
 			else
-				dir = CONST.DIR_SOUTH;
+				drawDir = CONST.DIR_SOUTH;
+			
+			locked = doLock;
 		}
 		
 		public void Process()
 		{
 			tickCount++;
-			if(tickCount > sprites[action][dir][frame].Item2)
+			if(tickCount > sprites[action][drawDir][frame].Item2)
 				IncrementFrame();
+			
+			if(mov)
+				Move();
 		}
 		
 		public string GetFrameID()
 		{
-			return sprites[action][dir][frame].Item1;
+			return sprites[action][drawDir][frame].Item1;
+		}
+		
+		public bool IsLocked()
+		{
+			return locked;
+		}
+		
+		public int GetDir()
+		{
+			return dir;
+		}
+		
+		public string GetAction()
+		{
+			return action;
 		}
 		
 		private void IncrementFrame()
 		{
-			if(sprites[action][dir].Length > frame + 1)
+			if(sprites[action][drawDir].Length > frame + 1)
 				frame++;
 			else
 				frame = 0;
 			
 			tickCount = 0;
+		}
+		
+		private void Idle()
+		{
+			StartAnimation(CONST.ACTION_IDLE, dir);
+			PrepIdle = false;
+		}
+		
+		private void Unlock()
+		{
+			locked = false;
+		}
+		
+		private void Move()
+		{
+			if(Coords.X < Destination.X)
+				Coords.X += Sprites.IncX;
+			else if(Coords.X > Destination.X)
+				Coords.X -= Sprites.IncX;
+			
+			if(Coords.Y < Destination.Y)
+				Coords.Y += Sprites.IncY;
+			else if(Coords.Y > Destination.Y)
+				Coords.Y -= Sprites.IncY;
+			
+			if(Coords == Destination)
+			{
+				mov = false;
+				Unlock();
+				if(PrepIdle)
+					Idle();
+			}
 		}
 	}
 }

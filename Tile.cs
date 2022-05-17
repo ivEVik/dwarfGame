@@ -82,6 +82,25 @@ namespace dwarfGame
 		public void AddMob(Mob mob)
 		{
 			Mobs.Add(mob);
+			mob.X = X;
+			mob.Y = Y;
+		}
+		
+		public int GetDir(Tile tile)
+		{
+			int dX = tile.X - X;
+			int dY = tile.Y - Y;
+			
+			if(Math.Abs(dX) > Math.Abs(dY))
+			{
+				if(dX > 0)
+					return CONST.DIR_EAST;
+				return CONST.DIR_WEST;
+			}
+			
+			if(dY > 0)
+				return CONST.DIR_SOUTH;
+			return CONST.DIR_NORTH;
 		}
 	}
 }
