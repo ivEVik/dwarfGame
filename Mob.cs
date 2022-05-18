@@ -7,6 +7,10 @@ namespace dwarfGame
 	public class Mob
 	{
 		private List<Tile> movePath;
+		private bool acting;
+		private bool current;
+		
+		public bool Ally;
 		
 		public Spritesheet Sheet;
 		public string Name;
@@ -22,11 +26,12 @@ namespace dwarfGame
 		
 		public Mob() {}
 		
-		public Mob(string name, string id, int dir, int movement, int x, int y)
+		public Mob(string name, string id, int dir, int movement, int x, int y, bool ally)
 		{
 			X = x;
 			Y = y;
 			movePath = new List<Tile>();
+			acting = false;
 			Name = name;
 			Dir = dir;
 			Sheet = new Spritesheet(id);
@@ -35,74 +40,30 @@ namespace dwarfGame
 			Sheet.StartAnimation(CONST.ACTION_IDLE, dir);
 			MaxMovement = movement;
 			Movement = movement;
+			Ally = ally;
+		}
+		
+		public void StartTurn()
+		{
+			Movement = MaxMovement;
+			Action = true;
+			acting = false;
+			current = true;
+		}
+		
+		public void EndTurn()
+		{
+			current = false;
+			Game.PassTurn();
 		}
 		
 		public void Process()
 		{
-			TryMove();
 			Sheet.Process();
-		}
-		
-		public bool CanPath(Tile tile)
-		{
-			if(GetDistanceTo(tile.X, tile.Y) > Movement || !tile.IsPassable())
-				return false;
-			
-			int mov = Movement;
-			var tiles = GetTile().GetNeighbours().Where(t => t.IsPassable());
-			
-			while(mov > 0)
-			{
-				if(tiles.Contains(tile))
-					return true;
-				tiles = tiles.SelectMany(t => t.GetNeighbours().Where(t => t.IsPassable()));
-				mov--;
-			}
-			
-			return false;
-		}
-		
-		public List<Tile> Path(Tile targetTile)
-		{
-			List<Tile> path = new List<Tile>();
-			int mov = Movement;
-			
-			var tiles = GetTile().GetNeighbours().Where(tile => tile.IsPassable());
-			List<Tuple<Tile, IEnumerable<Tile>>> tileConnections = new List<Tuple<Tile, IEnumerable<Tile>>>();
-			tileConnections.Add(Tuple.Create(GetTile(), tiles));
-			
-			while(mov > 0)
-			{
-				if(tiles.Contains(targetTile))
-				{
-					Tile pathTile = targetTile;
-					Tile mobTile = GetTile();
-					
-					while(pathTile != mobTile)
-					{
-						path.Add(pathTile);
-						pathTile = tileConnections
-							.Where(tuple => tuple.Item2.Contains(pathTile))
-							.FirstOrDefault()
-							.Item1;
-					}
-					
-					path.Reverse();
-					break;
-				}
-				
-				var neighbours = tiles.Select(tile => Tuple.Create(tile, tile.GetNeighbours().Where(t => t.IsPassable())));
-				tileConnections.AddRange(neighbours);
-				tiles = neighbours.SelectMany(tuple => tuple.Item2);
-				mov--;
-			}
-			
-			return path;
-		}
-		
-		public int GetDistanceTo(int x, int y)
-		{
-			return Math.Abs(X - x) + Math.Abs(Y - y);
+			if(!acting && current && Movement == 0)
+				EndTurn();
+			if(current)
+				TryMove();
 		}
 		
 		public Tile GetTile()
@@ -112,10 +73,11 @@ namespace dwarfGame
 		
 		public void Move(List<Tile> path)
 		{
-			if(path.Count() > Movement)
+			if(path.Count() > Movement || acting)
 				return;
 			
 			movePath = path;
+			acting = true;
 		}
 		
 		private void TryMove()
@@ -129,7 +91,7 @@ namespace dwarfGame
 			if(movePath.Count() == 0 && Sheet.IsLocked())
 			{
 				Sheet.PrepIdle = true;
-				return;
+				acting = false;
 			}
 		}
 		
@@ -153,6 +115,21 @@ namespace dwarfGame
 		private int GetDir(Tile tile)
 		{
 			return GetTile().GetDir(tile);
+		}
+		
+		public bool CanPath(Tile tile)
+		{
+			return GetTile().CanPath(tile, Movement);
+		}
+		
+		public List<Tile> Path(Tile tile)
+		{
+			return GetTile().Path(tile, Movement);
+		}
+		
+		public int GetDistanceTo(int x, int y)
+		{
+			return GetTile().GetDistanceTo(x, y);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace dwarfGame
 {
@@ -51,6 +52,66 @@ namespace dwarfGame
 				yield return Game.Map[X, Y - 1];
 			if(Y < Game.MapY - 1)
 				yield return Game.Map[X, Y + 1];
+		}
+		
+		public bool CanPath(Tile tile, int distance)
+		{
+			if(GetDistanceTo(tile.X, tile.Y) > distance || !tile.IsPassable())
+				return false;
+			
+			var tiles = GetNeighbours().Where(t => t.IsPassable());
+			
+			while(distance > 0)
+			{
+				if(tiles.Contains(tile))
+					return true;
+				tiles = tiles.SelectMany(t => t.GetNeighbours().Where(t => t.IsPassable()));
+				distance--;
+			}
+			
+			return false;
+		}
+		
+		public List<Tile> Path(Tile targetTile, int distance)
+		{
+			List<Tile> path = new List<Tile>();
+			
+			var tiles = GetNeighbours().Where(tile => tile.IsPassable());
+			List<Tuple<Tile, IEnumerable<Tile>>> tileConnections = new List<Tuple<Tile, IEnumerable<Tile>>>();
+			tileConnections.Add(Tuple.Create(this, tiles));
+			
+			while(distance > 0)
+			{
+				if(tiles.Contains(targetTile))
+				{
+					Tile pathTile = targetTile;
+					Tile mobTile = this;
+					
+					while(pathTile != mobTile)
+					{
+						path.Add(pathTile);
+						pathTile = tileConnections
+							.Where(tuple => tuple.Item2.Contains(pathTile))
+							.FirstOrDefault()
+							.Item1;
+					}
+					
+					path.Reverse();
+					break;
+				}
+				
+				var neighbours = tiles.Select(tile => Tuple.Create(tile, tile.GetNeighbours().Where(t => t.IsPassable())));
+				tileConnections.AddRange(neighbours);
+				tiles = neighbours.SelectMany(tuple => tuple.Item2);
+				distance--;
+			}
+			
+			return path;
+		}
+		
+		public int GetDistanceTo(int x, int y)
+		{
+			return Math.Abs(X - x) + Math.Abs(Y - y);
 		}
 		
 		public override bool Equals(object obj)
