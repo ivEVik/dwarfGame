@@ -12,6 +12,8 @@ namespace dwarfGame
 ... .
 .. ..";
 		
+		public static Random Randomiser;
+		
 		public static int Scale;
 		public static Tile[,] Map;
 		public static int MapX;
@@ -44,27 +46,39 @@ namespace dwarfGame
 			}
 		}
 		
+		public static void WipeMob(Mob mob)
+		{
+			Mobs.Remove(mob);
+			mob.GetTile().Mobs.Remove(mob);
+		}
+		
+		public static void WipeCurrent()
+		{
+			CurrentMob = null;
+		}
+		
 		public static void Initialise(int scale)
 		{
 			Scale = scale;
 			ElementSize = Scale * 32;
 			Horizontal = ElementSize / 2;
 			Vertical = Horizontal / 2;
-			TurnQueue = new Queue<Mob>();
+			Randomiser = new Random();
 		}
 		
 		public static void MakeMapFromString()
 		{
 			Mobs = new List<Mob>();
+			TurnQueue = new Queue<Mob>();
 			MapMaker.MakeMapFromString(mapTestPreset);
 			
-			Mob mob = new Mob("Urist", CONST.MOB_DWARF, CONST.DIR_SOUTH, 3, 2, 2, true);
+			Mob mob = new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Urist", 2, 2, true);
 			Mobs.Add(mob);
 			Map[mob.X, mob.Y].AddMob(mob);
 			
-			Mob mob2 = new Mob("Urist mk2", CONST.MOB_DWARF, CONST.DIR_SOUTH, 2, 2, 1, true);
-			Mobs.Add(mob2);
-			Map[mob2.X, mob2.Y].AddMob(mob2);
+			mob = new Mob(TEMPLATE.MOB_SLIME, "Blob", 1, 2, false);
+			Mobs.Add(mob);
+			Map[mob.X, mob.Y].AddMob(mob);
 			
 			foreach(Mob m in Mobs)
 				TurnQueue.Enqueue(m);

@@ -85,4 +85,18 @@
 			</frame>
 		</frames>
 	</anim>
+	<anim>
+		<action>strike</action>
+		<dir>0</dir>
+		<frames>
+			<frame>
+				<image>dwarf-strike-left-1</image>
+				<delay>2</delay>
+			</frame>
+			<frame>
+				<image>dwarf-strike-left-0</image>
+				<delay>1</delay>
+			</frame>
+		</frames>
+	</anim>
 </animations>

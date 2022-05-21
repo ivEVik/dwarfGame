@@ -14,6 +14,7 @@ namespace dwarfGame
 		private int tickCount;
 		private bool locked;
 		private bool mov;
+		private bool noCycle;
 		
 		public bool PrepIdle;
 		public Point Coords;
@@ -47,7 +48,7 @@ namespace dwarfGame
 			Coords = new Point((x - y) * Game.Horizontal, (x + y) * Game.Vertical);
 		}
 		
-		public void StartAnimation(string act, int direction, bool doLock = false)
+		public void StartAnimation(string act, int direction, bool doLock = false, bool noCycle = false)
 		{
 			frame = 0;
 			tickCount = 0;
@@ -64,6 +65,7 @@ namespace dwarfGame
 				drawDir = CONST.DIR_SOUTH;
 			
 			locked = doLock;
+			this.noCycle = noCycle;
 		}
 		
 		public void Process()
@@ -101,7 +103,11 @@ namespace dwarfGame
 			if(sprites[action][drawDir].Length > frame + 1)
 				frame++;
 			else
+			{
 				frame = 0;
+				if(noCycle)
+					Idle();
+			}
 			
 			tickCount = 0;
 		}
@@ -109,6 +115,7 @@ namespace dwarfGame
 		private void Idle()
 		{
 			StartAnimation(CONST.ACTION_IDLE, dir);
+			Unlock();
 			PrepIdle = false;
 		}
 		

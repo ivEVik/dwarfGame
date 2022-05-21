@@ -56,7 +56,7 @@ namespace dwarfGame
 		
 		public bool CanPath(Tile tile, int distance)
 		{
-			if(GetDistanceTo(tile.X, tile.Y) > distance || !tile.IsPassable())
+			if(GetDistance(tile.X, tile.Y) > distance || !tile.IsPassable())
 				return false;
 			
 			var tiles = GetNeighbours().Where(t => t.IsPassable());
@@ -109,7 +109,7 @@ namespace dwarfGame
 			return path;
 		}
 		
-		public int GetDistanceTo(int x, int y)
+		public int GetDistance(int x, int y)
 		{
 			return Math.Abs(X - x) + Math.Abs(Y - y);
 		}
@@ -147,10 +147,20 @@ namespace dwarfGame
 			mob.Y = Y;
 		}
 		
+		public int GetDir(Mob mob)
+		{
+			return GetDir(mob.X, mob.Y);
+		}
+		
 		public int GetDir(Tile tile)
 		{
-			int dX = tile.X - X;
-			int dY = tile.Y - Y;
+			return GetDir(tile.X, tile.Y);
+		}
+		
+		public int GetDir(int x, int y)
+		{
+			int dX = x - X;
+			int dY = y - Y;
 			
 			if(Math.Abs(dX) > Math.Abs(dY))
 			{
