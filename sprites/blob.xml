@@ -10,22 +10,22 @@
 		</frames>
 	</anim>
 	<anim>
-		<action>move</action>
+		<action>stagger</action>
 		<dir>0</dir>
 		<frames>
 			<frame>
-				<image>blob-move-left-0</image>
+				<image>blob-stagger-0</image>
 				<delay>2</delay>
 			</frame>
 			<frame>
-				<image>blob-move-left-1</image>
-				<delay>2</delay>
+				<image>blob-stagger-1</image>
+				<delay>1</delay>
 			</frame>
 		</frames>
 	</anim>
 	<anim>
 		<action>move</action>
-		<dir>3</dir>
+		<dir>0</dir>
 		<frames>
 			<frame>
 				<image>blob-move-left-0</image>
@@ -62,6 +62,24 @@
 			<frame>
 				<image>blob-move-right-1</image>
 				<delay>2</delay>
+			</frame>
+		</frames>
+	</anim>
+	<anim>
+		<action>strike</action>
+		<dir>0</dir>
+		<frames>
+			<frame>
+				<image>blob-strike-left-0</image>
+				<delay>2</delay>
+			</frame>
+			<frame>
+				<image>blob-strike-left-1</image>
+				<delay>1</delay>
+			</frame>
+			<frame>
+				<image>blob-strike-left-2</image>
+				<delay>1</delay>
 			</frame>
 		</frames>
 	</anim>

@@ -23,6 +23,8 @@ namespace dwarfGame
 		
 		public readonly Dictionary<string, int> Skills;
 		
+		public readonly Func<Mob, bool> Controller;
+		
 		public MobTemplate(
 			string MobID,
 			int Health,
@@ -35,7 +37,8 @@ namespace dwarfGame
 			int Int,
 			int Wil,
 			int Flags,
-			Dictionary<string, int> Skills
+			Dictionary<string, int> Skills,
+			Func<Mob, bool> Controller
 		)
 		{
 			this.MobID = MobID;
@@ -54,6 +57,8 @@ namespace dwarfGame
 			
 			this.Flags = Flags;
 			this.Skills = Skills;
+			
+			this.Controller = Controller;
 		}
 	}
 }

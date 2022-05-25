@@ -8,6 +8,7 @@ namespace dwarfGame
 		public const int DIR_EAST = 2;
 		public const int DIR_WEST = 3;
 		
+		public const int DIE_D2 = 2;
 		public const int DIE_D3 = 3;
 		public const int DIE_D4 = 4;
 		public const int DIE_D6 = 6;

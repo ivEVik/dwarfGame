@@ -7,8 +7,9 @@ namespace dwarfGame
 {
 	public class Tile
 	{
+		private int flags;
+		
 		public string SpriteID;
-		public int Flags;
 		public int X;
 		public int Y;
 		
@@ -19,7 +20,7 @@ namespace dwarfGame
 		public Tile(int flags, string spriteID)
 		{
 			SpriteID = spriteID;
-			Flags = flags;
+			this.flags = flags;
 			
 			Mobs = new List<Mob>();
 		}
@@ -27,7 +28,7 @@ namespace dwarfGame
 		public Tile(Tuple<int, string> tuple, int x, int y)
 		{
 			SpriteID = tuple.Item2;
-			Flags = tuple.Item1;
+			flags = tuple.Item1;
 			
 			X = x;
 			Y = y;
@@ -35,11 +36,21 @@ namespace dwarfGame
 			Mobs = new List<Mob>();
 		}
 		
-		public bool CheckFlag(int flag)
+		public bool CheckFlags(int flags)
 		{
-			if((Flags & flag) == flag)
+			if((this.flags & flags) == flags)
 				return true;
 			return false;
+		}
+		
+		public void DropFlags(int flags)
+		{
+			this.flags -= this.flags & flags;
+		}
+		
+		public void AddFlags(int flags)
+		{
+			this.flags = this.flags | flags;
 		}
 		
 		public IEnumerable<Tile> GetNeighbours()
@@ -56,6 +67,8 @@ namespace dwarfGame
 		
 		public bool CanPath(Tile tile, int distance)
 		{
+			if(tile == this)
+				return true;
 			if(GetDistance(tile.X, tile.Y) > distance || !tile.IsPassable())
 				return false;
 			
@@ -75,6 +88,9 @@ namespace dwarfGame
 		public List<Tile> Path(Tile targetTile, int distance)
 		{
 			List<Tile> path = new List<Tile>();
+			
+			if(targetTile == this)
+				return path;
 			
 			var tiles = GetNeighbours().Where(tile => tile.IsPassable());
 			List<Tuple<Tile, IEnumerable<Tile>>> tileConnections = new List<Tuple<Tile, IEnumerable<Tile>>>();
@@ -132,7 +148,7 @@ namespace dwarfGame
 		
 		public bool IsPassable()
 		{
-			return CheckFlag(FLAG.TILE_PASSABLE) && Mobs.Count == 0;
+			return CheckFlags(FLAG.TILE_PASSABLE) && Mobs.Count == 0;
 		}
 		
 		public void RemoveMob(Mob mob)

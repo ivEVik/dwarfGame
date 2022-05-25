@@ -64,7 +64,8 @@ namespace dwarfGame
 			else
 				drawDir = CONST.DIR_SOUTH;
 			
-			locked = doLock;
+			if(act == action)
+				locked = doLock;
 			this.noCycle = noCycle;
 		}
 		

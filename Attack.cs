@@ -19,16 +19,16 @@ namespace dwarfGame
 			this.flags = flags;
 		}
 		
-		public bool CheckFlag(int flag)
+		public bool CheckFlags(int flags)
 		{
-			if((flags & flag) == flag)
+			if((this.flags & flags) == flags)
 				return true;
 			return false;
 		}
 		
 		public int RollDamage(Dice attribute)
 		{
-			if(CheckFlag(FLAG.ATTACK_ROLL_ATTRIBUTE))
+			if(CheckFlags(FLAG.ATTACK_ROLL_ATTRIBUTE))
 				return (Damage + attribute.GetCount()).RollSum();
 			
 			return Damage.RollSum() + attribute.GetCount();

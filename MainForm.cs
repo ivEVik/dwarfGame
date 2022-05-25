@@ -88,7 +88,10 @@ namespace dwarfGame
 		{
 			Point xy = ScreenToMap(cursorLoc.X, cursorLoc.Y);
 			
-			if(xy.X > -1 && xy.X < Game.MapX && xy.Y > -1 && xy.Y < Game.MapY && Game.Map[xy.X, xy.Y].CheckFlag(FLAG.TILE_SELECTABLE))
+			if(!ValidTile(xy))
+				return;
+			
+			if(Game.Map[xy.X, xy.Y].CheckFlags(FLAG.TILE_SELECTABLE))
 			{
 				Tile tile = Game.Map[xy.X, xy.Y];
 				
@@ -106,6 +109,12 @@ namespace dwarfGame
 					foreach(Tile t in path)
 						e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_PATH_ACTIVE), MapToScreen(t.X, t.Y));
 				}
+			}
+			
+			if(Game.Map[xy.X, xy.Y].Mobs.Count > 0)
+			{
+				Mob mob = Game.Map[xy.X, xy.Y].Mobs.FirstOrDefault();
+				e.Graphics.DrawString($"{mob.Health} / {mob.MaxHealth}", new Font(mainFontFamily, 20), Brushes.Black, new Point(0, 0));
 			}
 		}
 		
@@ -188,7 +197,8 @@ namespace dwarfGame
 			
 			Tile tile = Game.Map[xy.X, xy.Y];
 			if(e.Button == MouseButtons.Left && Game.CurrentMob != null && Game.CurrentMob.CanPath(tile))
-				Game.CurrentMob.Move(Game.CurrentMob.Path(tile));
+				Game.CurrentMob.Act(CONST.ACTION_MOVE, tile: tile);
+				//Game.CurrentMob.Move(Game.CurrentMob.Path(tile));
 			
 			if(e.Button == MouseButtons.Left && Game.CurrentMob != null && Game.CurrentMob.Ally && Game.CurrentMob.GetDistance(tile) == 1 && tile.Mobs.Count > 0 && !tile.Mobs.FirstOrDefault().Ally)
 				Game.CurrentMob.Act(CONST.ACTION_STRIKE, mob: tile.Mobs.FirstOrDefault());

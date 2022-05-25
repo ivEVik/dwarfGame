@@ -20,6 +20,7 @@ namespace dwarfGame
 		public static int MapY;
 		
 		public static List<Mob> Mobs;
+		public static List<Mob> MobsToRemove;
 		
 		public static Queue<Mob> TurnQueue;
 		public static Mob CurrentMob;
@@ -33,6 +34,10 @@ namespace dwarfGame
 		{
 			foreach(Mob mob in Mobs)
 				mob.Process();
+			foreach(Mob mob in MobsToRemove)
+				Mobs.Remove(mob);
+			if(MobsToRemove.Count > 0)
+				MobsToRemove = new List<Mob>();
 		}
 		
 		public static void PassTurn()
@@ -48,7 +53,7 @@ namespace dwarfGame
 		
 		public static void WipeMob(Mob mob)
 		{
-			Mobs.Remove(mob);
+			MobsToRemove.Add(mob);
 			mob.GetTile().Mobs.Remove(mob);
 		}
 		
@@ -68,6 +73,7 @@ namespace dwarfGame
 		
 		public static void MakeMapFromString()
 		{
+			MobsToRemove = new List<Mob>();
 			Mobs = new List<Mob>();
 			TurnQueue = new Queue<Mob>();
 			MapMaker.MakeMapFromString(mapTestPreset);

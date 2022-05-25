@@ -6,7 +6,7 @@ namespace dwarfGame
 	public static class TEMPLATE
 	{
 		public static readonly Attack ATTACK_UNARMED = new Attack(new Dice(CONST.DIE_D3), 1, 0);
-		public static readonly Attack ATTACK_UNARMED_IMPROVED = new Attack(new Dice(CONST.DIE_D3), 1, FLAG.ATTACK_ROLL_ATTRIBUTE);
+		public static readonly Attack ATTACK_UNARMED_IMPROVED = new Attack(new Dice(CONST.DIE_D2), 1, FLAG.ATTACK_ROLL_ATTRIBUTE);
 		public static readonly Attack ATTACK_UNARMED_ZOMBIE = new Attack(new Dice(CONST.DIE_D3, 2), 1, 0);
 		public static readonly Attack ATTACK_UNARMED_SLIME = new Attack(new Dice(CONST.DIE_D3, 2), 1, 0);
 		
@@ -25,7 +25,8 @@ namespace dwarfGame
 			Skills: MakeSkillset(
 				dodge: CONST.SKILL_LEVEL_TRAINED,
 				melee: CONST.SKILL_LEVEL_TRAINED
-			)
+			),
+			Controller: (Mob mob) => Controllers.DecideAggressive(mob)
 		);
 		
 		public static readonly MobTemplate MOB_ZOMBIE_SHAMBLER = new MobTemplate(
@@ -41,8 +42,9 @@ namespace dwarfGame
 			Wil: 1,
 			Flags: FLAG.MOB_UNDEAD,
 			Skills: MakeSkillset(
-				melee: CONST.SKILL_LEVEL_TRAINED
-			)
+				melee: 10
+			),
+			Controller: (Mob mob) => Controllers.DecideAggressive(mob)
 		);
 		
 		public static readonly MobTemplate MOB_SLIME = new MobTemplate(
@@ -59,7 +61,8 @@ namespace dwarfGame
 			Flags: FLAG.MOB_AMORPHOUS,
 			Skills: MakeSkillset(
 				cast: CONST.SKILL_LEVEL_TRAINED
-			)
+			),
+			Controller: (Mob mob) => Controllers.DecideAggressive(mob)
 		);
 		
 		

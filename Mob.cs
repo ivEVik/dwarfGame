@@ -10,6 +10,9 @@ namespace dwarfGame
 		private bool acting;
 		private bool current;
 		private string act;
+		private Func<Mob, bool> controller;
+		
+		public bool HasMoved;
 		
 		private int flags;
 		
@@ -20,7 +23,7 @@ namespace dwarfGame
 		
 		public int MaxHealth;
 		public int Health;
-		public bool Action;
+		public int Actions;
 		public Attack Weapon;
 		
 		public Dice Str;
@@ -65,10 +68,12 @@ namespace dwarfGame
 			
 			Skills = new Dictionary<string, int>(template.Skills);
 			
+			controller = template.Controller;
+			
 			Ally = ally;
 			MaxMovement = template.Movement;
 			
-			MaxHealth = template.Health + Con.RollSuc();
+			MaxHealth = template.Health + Con.RollSuc() + Con.GetCount();
 			Health = MaxHealth;
 			
 			flags = template.Flags;
@@ -80,7 +85,7 @@ namespace dwarfGame
 		
 		public void StartTurn()
 		{
-			if(CheckFlag(FLAG.MOB_DEAD))
+			if(CheckFlags(FLAG.MOB_DEAD))
 			{
 				Game.WipeCurrent();
 				EndTurn();
@@ -89,15 +94,35 @@ namespace dwarfGame
 			DropFlags(FLAG.MOB_DEFENDING);
 			
 			Movement = MaxMovement;
-			Action = true;
+			Actions = 1;
 			acting = false;
 			current = true;
+			HasMoved = false;
+			
+			if(!Ally)
+				controller(this);
 		}
 		
 		public void EndTurn()
 		{
 			current = false;
 			Game.PassTurn();
+		}
+		
+		public void Process()
+		{
+			Sheet.Process();
+			TryMove();
+			
+			if(!acting && current && Ally && !Sheet.IsLocked() && (Movement == 0 || !CanAct()))
+				EndTurn();
+			
+			if(acting && Sheet.GetAction() != act)
+				acting = false;
+			
+			if(!Ally && current)
+				if(controller(this))
+					EndTurn();
 		}
 		
 		public void TakeDamage(int damage)
@@ -114,9 +139,9 @@ namespace dwarfGame
 			Game.WipeMob(this);
 		}
 		
-		public bool CheckFlag(int flag)
+		public bool CheckFlags(int flags)
 		{
-			if((flags & flag) == flag)
+			if((this.flags & flags) == flags)
 				return true;
 			return false;
 		}
@@ -126,21 +151,24 @@ namespace dwarfGame
 			this.flags -= this.flags & flags;
 		}
 		
-		public void Process()
+		public void AddFlags(int flags)
 		{
-			Sheet.Process();
-			if(!acting && current && Movement == 0)
-				EndTurn();
-			if(current)
-				TryMove();
-			
-			if(acting && Sheet.GetAction() != act)
-				acting = false;
+			this.flags = this.flags | flags;
+		}
+		
+		public bool CanAct()
+		{
+			return Actions > 0;
 		}
 		
 		public Tile GetTile()
 		{
 			return Game.Map[X, Y];
+		}
+		
+		public bool IsLocked()
+		{
+			return acting || Sheet.IsLocked();
 		}
 		
 		public void Move(List<Tile> path)
@@ -187,6 +215,18 @@ namespace dwarfGame
 		public bool CanPath(Tile tile)
 		{
 			return GetTile().CanPath(tile, Movement);
+		}
+		
+		public bool CanPath(Mob mob)
+		{
+			return mob.GetTile().GetNeighbours().Any(tile => CanPath(tile));
+		}
+		
+		public List<Tile> Path(Mob mob)
+		{
+			var tiles = mob.GetTile().GetNeighbours();
+			var paths = tiles.Where(tile => CanPath(tile)).Select(tile => Path(tile));
+			return paths.OrderBy(path => path.Count).FirstOrDefault();
 		}
 		
 		public List<Tile> Path(Tile tile)
@@ -246,39 +286,57 @@ namespace dwarfGame
 		
 		public void Act(string action, Mob mob = null, Tile tile = null)
 		{
-			if(!Action)
-				return;
-			Action = false;
+			//if(!Action)
+			//	return;
+			//Action = false;
 			
 			switch(action)
 			{
+				case CONST.ACTION_MOVE:
+					if(tile == null && mob == null)
+						throw new Exception($"Invalid target for action '{action}' passed to {Name} at ({X} {Y})");
+					
+					if(mob != null)
+						Move(Path(mob));
+					else
+						Move(Path(tile));
+					
+					HasMoved = true;
+					
+					return;
 				case CONST.ACTION_STRIKE:
+					//if(!Action)
+					//	return;
 					if(mob == null)
-						throw new Exception("Invalid target for action passed to '${Name}' at (${X} ${Y})");
+						throw new Exception($"Invalid target for action '{action}' passed to '{Name}' at ({X} {Y})");
 					
 					Dir = GetDir(mob);
 					mob.Dir = mob.GetDir(this);
 					Animate(action, true, true);
 					
-					if(Check(CONST.ACTION_STRIKE) > 0 && !mob.CheckFlag(FLAG.MOB_DEFENDING))
+					if(!mob.CheckFlags(FLAG.MOB_DEFENDING))
+						if(Check(CONST.ACTION_STRIKE) > 0)
+						{
+							mob.Animate(CONST.ACTION_STAGGER, true, true);
+							mob.TakeDamage(Weapon.RollDamage(Str));
+							break;
+						}
+					else if(Check(CONST.ACTION_STRIKE) > mob.Check(CONST.ACTION_DODGE))
 					{
-						mob.Animate(CONST.ACTION_STAGGER, true);
+						mob.Animate(CONST.ACTION_STAGGER, true, true);
 						mob.TakeDamage(Weapon.RollDamage(Str));
 						break;
 					}
-					
-					if(Check(CONST.ACTION_STRIKE) > mob.Check(CONST.ACTION_DODGE))
-					{
-						mob.Animate(CONST.ACTION_STAGGER, true);
-						mob.TakeDamage(Weapon.RollDamage(Str));
-						break;
-					}
-					mob.Animate(CONST.ACTION_DODGE, true);
+					mob.Animate(CONST.ACTION_DODGE, true, true);
 					
 					break;
+				case null:
+					return;
 				default:
-					throw new Exception("Invalid action ID '${action}' passed to '${Name}' at (${X} ${Y})");
+					throw new Exception($"Invalid action ID '{action}' passed to '{Name}' at ({X} {Y})");
 			}
+			
+			Actions--;
 		}
 	}
 }
