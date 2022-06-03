@@ -7,6 +7,8 @@ namespace dwarfGame
 	public class Spritesheet
 	{
 		private Dictionary<string, Dictionary<int, Tuple<string, int>[]>> sprites;
+		private string portraitID;
+		
 		private string action;
 		private int dir;
 		private int drawDir;
@@ -22,7 +24,7 @@ namespace dwarfGame
 		
 		public Spritesheet(string id)
 		{
-			sprites = Sprites.GetSprites(id);
+			sprites = Sprites.GetSprites(id, out portraitID);
 			action = CONST.ACTION_IDLE;
 			dir = CONST.DIR_SOUTH;
 			drawDir = CONST.DIR_SOUTH;
@@ -34,7 +36,7 @@ namespace dwarfGame
 		
 		public void SetDestination(int x, int y)
 		{
-			Destination = new Point((x - y) * Game.Horizontal, (x + y) * Game.Vertical);
+			Destination = new Point((x - y) * Sprites.Horizontal, (x + y) * Sprites.Vertical);
 			
 			if(Destination != Coords)
 			{
@@ -45,7 +47,7 @@ namespace dwarfGame
 		
 		public void SetCoords(int x, int y)
 		{
-			Coords = new Point((x - y) * Game.Horizontal, (x + y) * Game.Vertical);
+			Coords = new Point((x - y) * Sprites.Horizontal, (x + y) * Sprites.Vertical);
 		}
 		
 		public void StartAnimation(string act, int direction, bool doLock = false, bool noCycle = false)

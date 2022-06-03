@@ -16,7 +16,14 @@ namespace dwarfGame
 		private static PrivateFontCollection fontCollection;
 		private static FontFamily mainFontFamily;
 		
-		private int movInc;
+		private static SolidBrush bgBrush;
+		private static Color textColour;
+		
+		private static int leftBorder;
+		private static int rightBorder;
+		private static int topBorder;
+		private static int bottomBorder;
+		
 		private Timer timer;
 		private bool drag;
 		//private bool dragStart;
@@ -27,23 +34,27 @@ namespace dwarfGame
 		{
 			fontCollection = new PrivateFontCollection();
 			fontCollection.AddFontFile("res/DiaryOfAn8BitMage-lYDD.ttf");
-			mainFontFamily = new FontFamily("Diary Of An 8-Bit Mage", fontCollection); //Temporary.
+			mainFontFamily = new FontFamily("Diary Of An 8-Bit Mage", fontCollection);
 			
-			movInc = Sprites.SpriteSize / 16;
-			drag = false;
-			//dragStart = false;
-			cursorLoc = new Point(0, 0);
-			camera = new Point(Game.DiagLength / 2 + Game.MapX * Game.ElementSize / 2, Game.DiagLength / 4);
-			//camera = new Point(0, 0);
-			
-			ClientSize = new Size(Game.DiagLength, Game.DiagLength / 2);
+			ClientSize = new Size(800, 600);
 			FormBorderStyle = FormBorderStyle.FixedDialog;
 			WindowState = FormWindowState.Maximized;
+			Reset();
+			
+			//bgBrush = new SolidBrush(Color.FromArgb(82, 86, 117));
+			bgBrush = (SolidBrush) Brushes.Black;
+			textColour = Color.FromArgb(153, 110, 41);
+			
+			InitUI();
 			
 			timer = new Timer();
 			timer.Tick += (sender, args) => Invalidate();
-			timer.Tick += (sender, args) => Game.Process();
-			timer.Interval = 15;
+			timer.Tick += (sender, args) => {
+				if(Game.InGame)
+					Game.Process();
+			};
+			//timer.Interval = 15;
+			timer.Interval = 30;
 			timer.Start();
 			
 			MouseMove += (sender, e) => MouseMoved(sender, e);
@@ -52,20 +63,63 @@ namespace dwarfGame
 			MouseUp += (sender, e) => MouseReleased(sender, e);
 		}
 		
+		public void Reset()
+		{
+			drag = false;
+			//dragStart = false;
+			cursorLoc = new Point(0, 0);
+			camera = new Point(0, 0);
+			//camera = new Point(0, 0);
+			
+			leftBorder -= Game.MapY * Sprites.Horizontal + 600;
+			rightBorder = Game.MapX * Sprites.Horizontal + 600;
+			topBorder -= 300;
+			bottomBorder = (Game.MapX + Game.MapY) * Sprites.Vertical + 300;
+		}
+		
+		private void InitUI()
+		{
+			string buttonBase = CONST.UI_BUTTON_BIG;
+			string buttonHover = CONST.UI_BUTTON_BIG_HOVER;
+			string buttonPress = CONST.UI_BUTTON_BIG_PRESS;
+			int step = Sprites.GetUI(buttonBase).Height * 3 / 2;
+			Point point = new Point(Size.Width / 2 - Sprites.GetUI(buttonBase).Width / 2, Size.Height / 3);
+			
+			Font font = new Font(mainFontFamily, 10);
+			
+			Controls.Add(new GameButton(textColour, font, "Start game", point, buttonBase, buttonHover, buttonPress, (sender, e) => { Game.NewGame(TEMPLATE.MAP_TEST); Controls.Clear(); }));
+			
+			point = new Point(point.X, point.Y + step);
+			Controls.Add(new GameButton(textColour, font, "Exit game", point, buttonBase, buttonHover, buttonPress, (sender, e) => { Program.Exit(); }));
+		}
+		
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
-            Text = "Dwarf Game";
+            Text = "Dungeon Dwarves";
             DoubleBuffered = true;
         }
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
-			List<Mob> mobs = new List<Mob>();
+			e.Graphics.FillRectangle(bgBrush, 0, 0, Size.Width, Size.Height);
+			e.Graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixel;
 			
-			DrawTiles(e, mobs);
-			DrawCursor(e);
-			DrawMobs(e, mobs);
+			
+			if(Game.InGame)
+			{
+				List<Mob> mobs = new List<Mob>();
+			
+				DrawTiles(e, mobs);
+				DrawUnderMob(e);
+				DrawMobs(e, mobs);
+				DrawOverMob(e);
+			}
+			else
+			{
+				Bitmap sprite = Sprites.GetUI(CONST.UI_GAME_LOGO);
+				e.Graphics.DrawImage(sprite, new Point(Size.Width / 2 - sprite.Width / 2, 32));
+			}
 		}
 		
 		private void DrawTiles(PaintEventArgs e, List<Mob> mobs)
@@ -84,7 +138,7 @@ namespace dwarfGame
 				}
 		}
 		
-		private void DrawCursor(PaintEventArgs e)
+		private void DrawUnderMob(PaintEventArgs e)
 		{
 			Point xy = ScreenToMap(cursorLoc.X, cursorLoc.Y);
 			
@@ -110,19 +164,26 @@ namespace dwarfGame
 						e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_PATH_ACTIVE), MapToScreen(t.X, t.Y));
 				}
 			}
+		}
+		
+		private void DrawOverMob(PaintEventArgs e)
+		{
+			Point xy = ScreenToMap(cursorLoc.X, cursorLoc.Y);
 			
-			if(Game.Map[xy.X, xy.Y].Mobs.Count > 0)
-			{
-				Mob mob = Game.Map[xy.X, xy.Y].Mobs.FirstOrDefault();
-				e.Graphics.DrawString($"{mob.Health} / {mob.MaxHealth}", new Font(mainFontFamily, 20), Brushes.Black, new Point(0, 0));
-			}
+			if(!ValidTile(xy) || Game.Map[xy.X, xy.Y].Mobs.Count == 0)
+				return;
+			
+			DrawMobHealth(e, Game.Map[xy.X, xy.Y].Mobs.FirstOrDefault());
 		}
 		
 		private void DrawMobs(PaintEventArgs e, List<Mob> mobs)
 		{
 			if(Game.CurrentMob != null)
 				if(Game.CurrentMob.Ally)
+				{
 					e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_HIGHLIGHT_BLUE), MapToScreen(Game.CurrentMob.X, Game.CurrentMob.Y));
+					DrawMobHealth(e, Game.CurrentMob);
+				}
 				else
 					e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_HIGHLIGHT_RED), MapToScreen(Game.CurrentMob.X, Game.CurrentMob.Y));
 			
@@ -136,19 +197,19 @@ namespace dwarfGame
 		
 		private Point MapToScreen(int x, int y)
 		{
-			return new Point((x - y) * Game.Horizontal + camera.X, (x + y) * Game.Vertical + camera.Y);
+			return new Point((x - y) * Sprites.Horizontal + camera.X, (x + y) * Sprites.Vertical + camera.Y);
 		}
 		
 		private Point ScreenToMap(int x, int y)
 		{
-			x -= camera.X + Game.Horizontal;
-			y -= camera.Y + Game.Horizontal;
+			x -= camera.X + Sprites.Horizontal;
+			y -= camera.Y + Sprites.Horizontal;
 			if(y * 2 < Math.Abs(x))
 				return new Point(-1, -1);
 			
 			Point result = new Point();
-			result.X = (int)((double)x / Game.Horizontal + (double)y / Game.Vertical) / 2;
-			result.Y = (int)((double)y / Game.Vertical - (double)x / Game.Horizontal) / 2;
+			result.X = (int)((double)x / Sprites.Horizontal + (double)y / Sprites.Vertical) / 2;
+			result.Y = (int)((double)y / Sprites.Vertical - (double)x / Sprites.Horizontal) / 2;
 			
 			return result;
 		}
@@ -160,24 +221,47 @@ namespace dwarfGame
 		
 		private void MouseMoved(object sender, MouseEventArgs e)
 		{
+			if(!Game.InGame)
+				return;
+			
 			if(drag)
 			{
-				camera.X += e.X - cursorLoc.X;
-				camera.Y += e.Y - cursorLoc.Y;
-				//dragStart = true;
+				int x = camera.X + e.X - cursorLoc.X;
+				int y = camera.Y + e.Y - cursorLoc.Y;
+				
+				if(x > rightBorder)
+					camera.X = rightBorder;
+				else if(x < leftBorder)
+					camera.X = leftBorder;
+				else
+					camera.X = x;
+				
+				if(y > bottomBorder)
+					camera.Y = bottomBorder;
+				else if(y < topBorder)
+					camera.Y = topBorder;
+				else
+					camera.Y = y;
 			}
+			
 			cursorLoc.X = e.X;
 			cursorLoc.Y = e.Y;
 		}
 		
 		private void MousePressed(object sender, MouseEventArgs e)
 		{
+			if(!Game.InGame)
+				return;
+			
 			if(e.Button == MouseButtons.Right)
 				drag = true;
 		}
 		
 		private void MouseReleased(object sender, MouseEventArgs e)
 		{
+			if(!Game.InGame)
+				return;
+			
 			if(e.Button == MouseButtons.Right)
 			{
 				drag = false;
@@ -187,6 +271,9 @@ namespace dwarfGame
 		
 		private void MouseClicked(object sender, MouseEventArgs e)
 		{
+			if(!Game.InGame)
+				return;
+			
 			//if(e.Button == MouseButtons.Right && Game.SelectedMob != null && !dragStart)
 			//	Game.SelectedMob = null;
 			
@@ -211,7 +298,29 @@ namespace dwarfGame
 		
 		private bool ValidTile(int x, int y)
 		{
-			return x >= 0 && y >= 0 && x < Game.MapX && y < Game.MapY;
+			return Game.InGame && x >= 0 && y >= 0 && x < Game.MapX && y < Game.MapY;
+		}
+		
+		private void DrawMobHealth(PaintEventArgs e, Mob mob)
+		{
+			Point point = new Point(mob.Sheet.Coords.X + camera.X, mob.Sheet.Coords.Y + camera.Y);
+			int stepX = Sprites.GetOverlay(CONST.OVERLAY_MOB_HEALTH_BG).Width;
+			int stepY = stepX * 2 / 3;
+			stepX = stepX / (stepX / Sprites.Scale);
+			point = new Point(point.X + Sprites.SpriteSize / 2 - (mob.MaxHealth / 2 + 2) * stepX, point.Y - Sprites.Scale * 6);
+			
+			for(int t = 0; t < mob.MaxHealth; t++)
+			{
+				e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_MOB_HEALTH_BG), point);
+				
+				if(t < mob.Health)
+					e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_MOB_HEALTH_FULL), point);
+				
+				if(t % 2 == 0)
+					point = new Point(point.X + stepX, point.Y + stepY);
+				else
+					point = new Point(point.X + stepX, point.Y - stepY);
+			}
 		}
 	}
 }

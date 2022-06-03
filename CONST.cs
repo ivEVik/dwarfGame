@@ -16,6 +16,7 @@ namespace dwarfGame
 		public const int DIE_D10 = 10;
 		public const int DIE_D12 = 12;
 		
+		public const string MOB_NULL = "null";
 		public const string MOB_DWARF = "dwarf";
 		public const string MOB_ZOMBIE = "zombie";
 		public const string MOB_SLIME = "blob";
@@ -50,5 +51,23 @@ namespace dwarfGame
 		public const string OVERLAY_PATH = "tile-path-white";
 		public const string OVERLAY_PATH_ACTIVE = "tile-path-blue";
 		public const string OVERLAY_SHADOW = "mob-shadow";
+		
+		public const string OVERLAY_MOB_HEALTH_BG = "mob-health-background";
+		public const string OVERLAY_MOB_HEALTH_FULL = "mob-health-full";
+		
+		public const string UI_NULL = "ui-null";
+		public const string UI_GAME_LOGO = "game-logo";
+		
+		public const string UI_BUTTON_SMALL = "button-small-inactive";
+		public const string UI_BUTTON_SMALL_HOVER = "button-small-active";
+		public const string UI_BUTTON_SMALL_PRESS = "button-small-pressed";
+		
+		public const string UI_BUTTON_MEDIUM = "button-medium-inactive";
+		public const string UI_BUTTON_MEDIUM_HOVER = "button-medium-active";
+		public const string UI_BUTTON_MEDIUM_PRESS = "button-medium-pressed";
+		
+		public const string UI_BUTTON_BIG = "button-big-inactive";
+		public const string UI_BUTTON_BIG_HOVER = "button-big-active";
+		public const string UI_BUTTON_BIG_PRESS = "button-big-pressed";
 	}
 }

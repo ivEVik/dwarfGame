@@ -43,10 +43,10 @@ namespace dwarfGame
 		
 		public Mob() {}
 		
-		public Mob(MobTemplate template, string name = "", int x = 0, int y = 0, bool ally = false)
+		public Mob(MobTemplate template, string name = "", bool ally = false)
 		{
-			X = x;
-			Y = y;
+			X = -1;
+			Y = -1;
 			Dir = CONST.DIR_SOUTH;
 			act = "";
 			
@@ -305,8 +305,8 @@ namespace dwarfGame
 					
 					return;
 				case CONST.ACTION_STRIKE:
-					//if(!Action)
-					//	return;
+					if(Actions <= 0)
+						return;
 					if(mob == null)
 						throw new Exception($"Invalid target for action '{action}' passed to '{Name}' at ({X} {Y})");
 					

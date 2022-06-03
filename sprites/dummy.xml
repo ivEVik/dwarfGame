@@ -1,12 +1,15 @@
-<animations>
-	<anim>
-		<action>idle</action>
-		<dir>0</dir>
-		<frames>
-			<frame>
-				<image>dummy</image>
-				<delay>100</delay>
-			</frame>
-		</frames>
-	</anim>
-</animations>
+<spritesheet>
+	<portrait>ui-null</portrait>
+	<animations>
+		<anim>
+			<action>idle</action>
+			<dir>0</dir>
+			<frames>
+				<frame>
+					<image>dummy</image>
+					<delay>100</delay>
+				</frame>
+			</frames>
+		</anim>
+	</animations>
+</spritesheet>

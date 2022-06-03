@@ -17,6 +17,17 @@ namespace dwarfGame
 		
 		public Tile() {}
 		
+		public Tile(TileTemplate template, int x, int y)
+		{
+			SpriteID = template.SpriteID;
+			flags = template.Flags;
+			
+			Mobs = new List<Mob>();
+			
+			X = x;
+			Y = y;
+		}
+		
 		public Tile(int flags, string spriteID)
 		{
 			SpriteID = spriteID;
@@ -161,6 +172,13 @@ namespace dwarfGame
 			Mobs.Add(mob);
 			mob.X = X;
 			mob.Y = Y;
+		}
+		
+		public void SpawnMob(Mob mob)
+		{
+			mob.Sheet.SetCoords(X, Y);
+			mob.Sheet.SetDestination(X, Y);
+			AddMob(mob);
 		}
 		
 		public int GetDir(Mob mob)

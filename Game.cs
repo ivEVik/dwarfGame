@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace dwarfGame
 {
@@ -14,7 +15,8 @@ namespace dwarfGame
 		
 		public static Random Randomiser;
 		
-		public static int Scale;
+		public static bool InGame;
+		
 		public static Tile[,] Map;
 		public static int MapX;
 		public static int MapY;
@@ -25,10 +27,7 @@ namespace dwarfGame
 		public static Queue<Mob> TurnQueue;
 		public static Mob CurrentMob;
 		
-        public static int ElementSize;
-		public static int Horizontal;
-		public static int Vertical;
-		public static int DiagLength;
+		public static Mob[] Dwarves;
 		
 		public static void Process()
 		{
@@ -62,13 +61,42 @@ namespace dwarfGame
 			CurrentMob = null;
 		}
 		
-		public static void Initialise(int scale)
+		public static void Initialise()
 		{
-			Scale = scale;
-			ElementSize = Scale * 32;
-			Horizontal = ElementSize / 2;
-			Vertical = Horizontal / 2;
 			Randomiser = new Random();
+			
+			Dwarves = new Mob[3] { new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Urist", true),
+				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Rockbeard", true),
+				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Ironhammer", true)
+			};
+		}
+		
+		public static void NewGame(MapTemplate template)
+		{
+			LoadMap(template);
+			StartGame();
+		}
+		
+		public static void LoadMap(MapTemplate template)
+		{
+			MobsToRemove = new List<Mob>();
+			Mobs = new List<Mob>();
+			TurnQueue = new Queue<Mob>();
+			
+			Map = MapMaker.MakeMap(template);
+			
+			MapX = Map.GetLength(0);
+			MapY = Map.GetLength(1);
+			
+			for(int t = 0; t < Dwarves.Length; t++)
+				Map[template.Dwarves[t].X, template.Dwarves[t].Y].SpawnMob(Dwarves[t]);
+			
+			foreach(Tile t in Map)
+				foreach(Mob mob in t.Mobs)
+					Mobs.Add(mob);
+			
+			foreach(Mob mob in Mobs.OrderBy(mob => !mob.Ally))
+				TurnQueue.Enqueue(mob);
 		}
 		
 		public static void MakeMapFromString()
@@ -78,19 +106,24 @@ namespace dwarfGame
 			TurnQueue = new Queue<Mob>();
 			MapMaker.MakeMapFromString(mapTestPreset);
 			
-			Mob mob = new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Urist", 2, 2, true);
+			Mob mob = new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Urist", true);
+			//Mob mob = Dwarves[0];
 			Mobs.Add(mob);
-			Map[mob.X, mob.Y].AddMob(mob);
+			Map[4, 4].SpawnMob(mob);
 			
-			mob = new Mob(TEMPLATE.MOB_SLIME, "Blob", 1, 2, false);
+			mob = new Mob(TEMPLATE.MOB_SLIME, "Blob", false);
 			Mobs.Add(mob);
-			Map[mob.X, mob.Y].AddMob(mob);
+			Map[2, 1].SpawnMob(mob);
 			
 			foreach(Mob m in Mobs)
 				TurnQueue.Enqueue(m);
 			PassTurn();
-			
-			DiagLength = (int)Math.Sqrt(MapX * ElementSize * MapX * ElementSize + MapY * ElementSize * MapY * ElementSize);
+		}
+		
+		public static void StartGame()
+		{
+			InGame = true;
+			PassTurn();
 		}
 	}
 }

@@ -25,6 +25,13 @@ namespace dwarfGame
 		
 		public readonly Func<Mob, bool> Controller;
 		
+		public MobTemplate() {}
+		
+		public MobTemplate(string MobID)
+		{
+			this.MobID = MobID;
+		}
+		
 		public MobTemplate(
 			string MobID,
 			int Health,
@@ -60,5 +67,20 @@ namespace dwarfGame
 			
 			this.Controller = Controller;
 		}
+		
+		public override bool Equals(object obj)
+		{
+			if(!(obj is MobTemplate))
+				return false;
+			return MobID == (obj as MobTemplate).MobID;
+		}
+		
+		public override int GetHashCode()
+		{
+			return MobID.GetHashCode();
+		}
+		
+		public static bool operator ==(MobTemplate tmp, MobTemplate tmp2) => tmp.MobID == tmp2.MobID;
+		public static bool operator !=(MobTemplate tmp, MobTemplate tmp2) => tmp.MobID != tmp2.MobID;
 	}
 }
