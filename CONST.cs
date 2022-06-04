@@ -60,14 +60,14 @@ namespace dwarfGame
 		
 		public const string UI_BUTTON_SMALL = "button-small-inactive";
 		public const string UI_BUTTON_SMALL_HOVER = "button-small-active";
-		public const string UI_BUTTON_SMALL_PRESS = "button-small-pressed";
+		public const string UI_BUTTON_SMALL_PRESS = "button-small-press";
 		
 		public const string UI_BUTTON_MEDIUM = "button-medium-inactive";
 		public const string UI_BUTTON_MEDIUM_HOVER = "button-medium-active";
-		public const string UI_BUTTON_MEDIUM_PRESS = "button-medium-pressed";
+		public const string UI_BUTTON_MEDIUM_PRESS = "button-medium-press";
 		
 		public const string UI_BUTTON_BIG = "button-big-inactive";
 		public const string UI_BUTTON_BIG_HOVER = "button-big-active";
-		public const string UI_BUTTON_BIG_PRESS = "button-big-pressed";
+		public const string UI_BUTTON_BIG_PRESS = "button-big-press";
 	}
 }

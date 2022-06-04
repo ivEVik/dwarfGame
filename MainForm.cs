@@ -39,7 +39,7 @@ namespace dwarfGame
 			ClientSize = new Size(800, 600);
 			FormBorderStyle = FormBorderStyle.FixedDialog;
 			WindowState = FormWindowState.Maximized;
-			Reset();
+			ResetView();
 			
 			//bgBrush = new SolidBrush(Color.FromArgb(82, 86, 117));
 			bgBrush = (SolidBrush) Brushes.Black;
@@ -63,7 +63,7 @@ namespace dwarfGame
 			MouseUp += (sender, e) => MouseReleased(sender, e);
 		}
 		
-		public void Reset()
+		public void ResetView()
 		{
 			drag = false;
 			//dragStart = false;
@@ -87,7 +87,7 @@ namespace dwarfGame
 			
 			Font font = new Font(mainFontFamily, 10);
 			
-			Controls.Add(new GameButton(textColour, font, "Start game", point, buttonBase, buttonHover, buttonPress, (sender, e) => { Game.NewGame(TEMPLATE.MAP_TEST); Controls.Clear(); }));
+			Controls.Add(new GameButton(textColour, font, "Start game", point, buttonBase, buttonHover, buttonPress, (sender, e) => { Game.NewGame(TEMPLATE.MAP_TEST); Controls.Clear(); ResetView(); }));
 			
 			point = new Point(point.X, point.Y + step);
 			Controls.Add(new GameButton(textColour, font, "Exit game", point, buttonBase, buttonHover, buttonPress, (sender, e) => { Program.Exit(); }));
@@ -125,17 +125,22 @@ namespace dwarfGame
 		private void DrawTiles(PaintEventArgs e, List<Mob> mobs)
 		{
 			for(int y = 0; y < Game.MapY; y++)
+			{
+				Point xy = MapToScreen(0, y);
 				for(int x = 0; x < Game.MapX; x++)
 				{
 					Tile tile = Game.Map[x, y];
-					e.Graphics.DrawImage(Sprites.GetSprite(tile), MapToScreen(x, y));
+					e.Graphics.DrawImage(Sprites.GetSprite(tile), xy);
 					
 					if(tile.Mobs.Count > 0)
 						mobs.Add(tile.Mobs[0]);
 					
 					if(Game.CurrentMob != null && Game.CurrentMob.Ally && Game.CurrentMob.CanPath(tile))
-						e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_PATH), MapToScreen(x, y));
+						e.Graphics.DrawImage(Sprites.GetOverlay(CONST.OVERLAY_PATH), xy);
+					
+					xy = new Point(xy.X + Sprites.Horizontal, xy.Y + Sprites.Vertical);
 				}
+			}
 		}
 		
 		private void DrawUnderMob(PaintEventArgs e)
