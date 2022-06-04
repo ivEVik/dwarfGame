@@ -30,6 +30,8 @@ namespace dwarfGame
 		private Point camera;
 		private Point cursorLoc;
 		
+		private BackgroundControl openMenu;
+		
 		public MainForm()
 		{
 			fontCollection = new PrivateFontCollection();
@@ -61,6 +63,8 @@ namespace dwarfGame
 			MouseDown += (sender, e) => MousePressed(sender, e);
 			MouseClick += (sender, e) => MouseClicked(sender, e);
 			MouseUp += (sender, e) => MouseReleased(sender, e);
+			
+			KeyUp += (sender, e) => KeyPressDW(sender, e);
 		}
 		
 		public void ResetView()
@@ -79,6 +83,8 @@ namespace dwarfGame
 		
 		private void InitUI()
 		{
+			DropMenu();
+			Controls.Clear();
 			string buttonBase = CONST.UI_BUTTON_BIG;
 			string buttonHover = CONST.UI_BUTTON_BIG_HOVER;
 			string buttonPress = CONST.UI_BUTTON_BIG_PRESS;
@@ -86,11 +92,84 @@ namespace dwarfGame
 			Point point = new Point(Size.Width / 2 - Sprites.GetUI(buttonBase).Width / 2, Size.Height / 3);
 			
 			Font font = new Font(mainFontFamily, 10);
+			GameButton button = new GameButton(
+				textColour,
+				font,
+				"Новая игра",
+				point,
+				buttonBase,
+				buttonHover,
+				buttonPress,
+				(sender, e) => { Game.NewGame(TEMPLATE.MAP_TEST); Controls.Clear(); ResetView(); });
+			button.Anchor = AnchorStyles.Top;
 			
-			Controls.Add(new GameButton(textColour, font, "Start game", point, buttonBase, buttonHover, buttonPress, (sender, e) => { Game.NewGame(TEMPLATE.MAP_TEST); Controls.Clear(); ResetView(); }));
+			
+			Controls.Add(button);
 			
 			point = new Point(point.X, point.Y + step);
-			Controls.Add(new GameButton(textColour, font, "Exit game", point, buttonBase, buttonHover, buttonPress, (sender, e) => { Program.Exit(); }));
+			button = new GameButton(
+				textColour,
+				font,
+				"Выход",
+				point,
+				buttonBase,
+				buttonHover,
+				buttonPress,
+				(sender, e) => { Program.Exit(); });
+			button.Anchor = AnchorStyles.Top;
+			Controls.Add(button);
+		}
+		
+		private void DropMenu()
+		{
+			if(openMenu == null)
+				return;
+			
+			Controls.Remove(openMenu);
+			openMenu = null;
+		}
+		
+		private void PauseMenu()
+		{
+			string buttonBase = CONST.UI_BUTTON_BIG;
+			string buttonHover = CONST.UI_BUTTON_BIG_HOVER;
+			string buttonPress = CONST.UI_BUTTON_BIG_PRESS;
+			int step = Sprites.GetUI(buttonBase).Height;
+			Font font = new Font(mainFontFamily, 10);
+			Point point = new Point(Size.Width / 2 - Sprites.GetUI(buttonBase).Width / 2, Size.Height / 2);
+			
+			openMenu = new BackgroundControl();
+			openMenu.Size = new Size(Sprites.GetUI(buttonBase).Width + 10, step * 3);
+			openMenu.Location = new Point(point.X - 5, point.Y - 5);
+			Controls.Add(openMenu);
+			
+			point = new Point(point.X - openMenu.Location.X, point.Y - openMenu.Location.Y);
+			step = step * 3 / 2;
+			GameButton button = new GameButton(
+				textColour,
+				font,
+				"Продолжить",
+				point,
+				buttonBase,
+				buttonHover,
+				buttonPress,
+				(sender, e) => { DropMenu(); });
+			
+			openMenu.Controls.Add(button);
+			//Controls.Add(button);
+			
+			point = new Point(point.X, point.Y + step);
+			button = new GameButton(
+				textColour,
+				font,
+				"Главное Меню",
+				point,
+				buttonBase,
+				buttonHover,
+				buttonPress,
+				(sender, e) => { Game.DropMap(); InitUI(); });
+			
+			openMenu.Controls.Add(button);
 		}
 		
 		protected override void OnLoad(EventArgs e)
@@ -284,16 +363,21 @@ namespace dwarfGame
 			
 			Point xy = ScreenToMap(cursorLoc);
 			
-			if(!ValidTile(xy))
+			if(!ValidTile(xy) || !Game.PlayerTurn)
 				return;
 			
 			Tile tile = Game.Map[xy.X, xy.Y];
-			if(e.Button == MouseButtons.Left && Game.CurrentMob != null && Game.CurrentMob.CanPath(tile))
-				Game.CurrentMob.Act(CONST.ACTION_MOVE, tile: tile);
-				//Game.CurrentMob.Move(Game.CurrentMob.Path(tile));
+			if(e.Button == MouseButtons.Left)
+			{
+				if(Game.CurrentMob != null && Game.CurrentMob.CanPath(tile))
+					Game.CurrentMob.Act(CONST.ACTION_MOVE, tile: tile);
 			
-			if(e.Button == MouseButtons.Left && Game.CurrentMob != null && Game.CurrentMob.Ally && Game.CurrentMob.GetDistance(tile) == 1 && tile.Mobs.Count > 0 && !tile.Mobs.FirstOrDefault().Ally)
-				Game.CurrentMob.Act(CONST.ACTION_STRIKE, mob: tile.Mobs.FirstOrDefault());
+				if(Game.CurrentMob != null && Game.CurrentMob.Ally && Game.CurrentMob.GetDistance(tile) == 1 && tile.Mobs.Count > 0 && !tile.Mobs.FirstOrDefault().Ally)
+					Game.CurrentMob.Act(CONST.ACTION_STRIKE, mob: tile.Mobs.FirstOrDefault());
+				
+				if(tile.Mobs.Count > 0 && tile.Mobs.FirstOrDefault().Ally)
+					Game.Select(tile.Mobs.FirstOrDefault());
+			}
 		}
 		
 		private bool ValidTile(Point point)
@@ -325,6 +409,31 @@ namespace dwarfGame
 					point = new Point(point.X + stepX, point.Y + stepY);
 				else
 					point = new Point(point.X + stepX, point.Y - stepY);
+			}
+		}
+		
+		private void KeyPressDW(object sender, KeyEventArgs e)
+		{
+			switch(e.KeyCode)
+			{
+				case KEYBIND.KEY_END_TURN:
+				{
+					if(Game.InGame && Game.PlayerTurn && (Game.CurrentMob == null || !Game.CurrentMob.IsLocked()))
+						Game.PassTurn();
+					return;
+				}
+				case KEYBIND.KEY_BACK:
+				{
+					if(!Game.InGame)
+						return;
+					
+					if(openMenu != null)
+						DropMenu();
+					else
+						PauseMenu();
+					
+					return;
+				}
 			}
 		}
 	}

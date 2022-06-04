@@ -20,7 +20,7 @@ namespace dwarfGame
 			string spriteIDbase,
 			string spriteIDhover,
 			string spriteIDpress,
-			Action<object, MouseEventArgs> onClick
+			Action<object, EventArgs> onClick
 		)// : base()
 		{
 			this.spriteIDbase = spriteIDbase;
@@ -44,18 +44,16 @@ namespace dwarfGame
 			Height = Image.Height;
 			Location = coords;
 			
-			Anchor = AnchorStyles.Top;
-			
 			BackColor = Color.FromArgb(20, 16, 11);
 			
 			MouseEnter += (sender, e) => { Image = Sprites.GetUI(spriteIDhover); };
 			MouseLeave += (sender, e) => { Image = Sprites.GetUI(spriteIDbase); };
 			MouseDown += (sender, e) => { Image = Sprites.GetUI(spriteIDpress); };
 			MouseUp += (sender, e) => { Image = Sprites.GetUI(spriteIDhover); };
-			MouseClick += (sender, e) => onClick(sender, e);
+			Click += (sender, e) => onClick(sender, e);
 			
-			//GotFocus += (sender, e) => { Image = Sprites.GetUI(spriteIDhover); };
-			//LostFocus += (sender, e) => { Image = Sprites.GetUI(spriteIDbase); };
+			GotFocus += (sender, e) => { Image = Sprites.GetUI(spriteIDhover); };
+			LostFocus += (sender, e) => { Image = Sprites.GetUI(spriteIDbase); };
 		}
 		
 		protected override void OnPaint(PaintEventArgs e)

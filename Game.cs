@@ -16,6 +16,7 @@ namespace dwarfGame
 		public static Random Randomiser;
 		
 		public static bool InGame;
+		public static bool PlayerTurn;
 		
 		public static Tile[,] Map;
 		public static int MapX;
@@ -41,13 +42,50 @@ namespace dwarfGame
 		
 		public static void PassTurn()
 		{
+			if(PlayerTurn)
+			{
+				if(CurrentMob != null)
+				{
+					CurrentMob.DropSelection();
+					CurrentMob = null;
+				}
+				PlayerTurn = false;
+			}
+			
 			if(CurrentMob != null)
 				TurnQueue.Enqueue(CurrentMob);
+			
 			if(TurnQueue.Count > 0)
+				if(TurnQueue.Peek().TookTurn)
+					StartPlayerTurn();
+				else
+					CurrentMob = TurnQueue.Dequeue();
+					CurrentMob.StartTurn();
+		}
+		
+		public static void StartPlayerTurn()
+		{
+			PlayerTurn = true;
+			
+			foreach(Mob dwarf in Dwarves.Where(df => df != null && !df.CheckFlags(FLAG.MOB_DEAD)))
 			{
-				CurrentMob = TurnQueue.Dequeue();
-				CurrentMob.StartTurn();
+				dwarf.StartTurn();
+				dwarf.DropSelection();
 			}
+			
+			foreach(Mob mob in Mobs)
+				mob.TookTurn = false;
+			
+			Select(Dwarves.FirstOrDefault(dwarf => dwarf != null && !dwarf.CheckFlags(FLAG.MOB_DEAD)));
+		}
+		
+		public static void Select(Mob mob)
+		{
+			if(!PlayerTurn || mob == null || !mob.Ally || mob.CheckFlags(FLAG.MOB_DEAD))
+				return;
+			
+			CurrentMob = mob;
+			mob.Select();
 		}
 		
 		public static void WipeMob(Mob mob)
@@ -64,15 +102,16 @@ namespace dwarfGame
 		public static void Initialise()
 		{
 			Randomiser = new Random();
-			
-			Dwarves = new Mob[3] { new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Urist", true),
-				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Rockbeard", true),
-				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Ironhammer", true)
-			};
 		}
 		
 		public static void NewGame(MapTemplate template)
 		{
+			Dwarves = new Mob[3] {
+				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Urist", true),
+				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Rockbeard", true),
+				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Ironhammer", true)
+			};
+			
 			LoadMap(template);
 			StartGame();
 		}
@@ -95,8 +134,24 @@ namespace dwarfGame
 				foreach(Mob mob in t.Mobs)
 					Mobs.Add(mob);
 			
-			foreach(Mob mob in Mobs.OrderBy(mob => !mob.Ally))
+			foreach(Mob mob in Mobs.Where(mob => !mob.Ally))
 				TurnQueue.Enqueue(mob);
+		}
+		
+		public static void DropMap()
+		{
+			InGame = false;
+			
+			MobsToRemove = new List<Mob>();
+			Mobs = new List<Mob>();
+			TurnQueue = new Queue<Mob>();
+			
+			Map = null;
+			MapX = 0;
+			MapY = 0;
+			
+			CurrentMob = null;
+			Dwarves = null;
 		}
 		
 		public static void MakeMapFromString()
@@ -123,7 +178,7 @@ namespace dwarfGame
 		public static void StartGame()
 		{
 			InGame = true;
-			PassTurn();
+			StartPlayerTurn();
 		}
 	}
 }

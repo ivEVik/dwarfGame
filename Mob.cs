@@ -13,6 +13,7 @@ namespace dwarfGame
 		private Func<Mob, bool> controller;
 		
 		public bool HasMoved;
+		public bool TookTurn;
 		
 		private int flags;
 		
@@ -106,16 +107,24 @@ namespace dwarfGame
 		public void EndTurn()
 		{
 			current = false;
+			TookTurn = true;
 			Game.PassTurn();
+		}
+		
+		public void DropSelection()
+		{
+			current = false;
+		}
+		
+		public void Select()
+		{
+			current = true;
 		}
 		
 		public void Process()
 		{
 			Sheet.Process();
 			TryMove();
-			
-			if(!acting && current && Ally && !Sheet.IsLocked() && (Movement == 0 || !CanAct()))
-				EndTurn();
 			
 			if(acting && Sheet.GetAction() != act)
 				acting = false;
