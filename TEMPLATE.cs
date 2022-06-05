@@ -6,6 +6,8 @@ namespace dwarfGame
 {
 	public static class TEMPLATE
 	{
+		public static List<MapTemplate> MAPS = new List<MapTemplate>();
+		
 		public static Attack ATTACK_UNARMED = new Attack(new Dice(CONST.DIE_D3), 1, 0);
 		public static Attack ATTACK_UNARMED_IMPROVED = new Attack(new Dice(CONST.DIE_D2), 1, FLAG.ATTACK_ROLL_ATTRIBUTE);
 		public static Attack ATTACK_UNARMED_ZOMBIE = new Attack(new Dice(CONST.DIE_D3, 2), 1, 0);
@@ -85,7 +87,7 @@ namespace dwarfGame
 		
 		
 		public static MapTemplate MAP_TEST = new MapTemplate(
-			Name: "Test Map",
+			MapID: "Test Map",
 			TileDict: MakeTileset(
 				Tuple.Create(' ', TILE_NULL),
 				Tuple.Create('.', TILE_BRICK)
@@ -111,7 +113,7 @@ namespace dwarfGame
 		);
 		
 		public static MapTemplate MAP_TEST_BIG = new MapTemplate(
-			Name: "Test Map",
+			MapID: "Test Map",
 			TileDict: MakeTileset(
 				Tuple.Create(' ', TILE_NULL),
 				Tuple.Create('.', TILE_BRICK)

@@ -16,6 +16,10 @@ namespace dwarfGame
 		public const int DIE_D10 = 10;
 		public const int DIE_D12 = 12;
 		
+		public const int SCORE_KILL = 25;
+		public const int SCORE_MAP = 100;
+		public const int SCORE_DWARF = 100;
+		
 		public const string MOB_NULL = "null";
 		public const string MOB_DWARF = "dwarf";
 		public const string MOB_ZOMBIE = "zombie";
@@ -57,6 +61,10 @@ namespace dwarfGame
 		
 		public const string UI_NULL = "ui-null";
 		public const string UI_GAME_LOGO = "game-logo";
+		
+		public const string UI_PORTRAIT = "portrait-bg";
+		public const string UI_PORTRAIT_HOVER = "portrait-bg-hover";
+		public const string UI_PORTRAIT_PRESS = "portrait-bg-select";
 		
 		public const string UI_BUTTON_SMALL = "button-small-inactive";
 		public const string UI_BUTTON_SMALL_HOVER = "button-small-active";

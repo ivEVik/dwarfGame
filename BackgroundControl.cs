@@ -10,8 +10,17 @@ namespace dwarfGame
 		public BackgroundControl() : base()
 		{
 			SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-			this.BackColor = Color.Transparent;
+			SetStyle(ControlStyles.Selectable, false);
+			BackColor = Color.Transparent;
 			this.DoubleBuffered = true;
+		}
+		
+		protected override void OnPaint(PaintEventArgs e)
+		{
+			e.Graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
+			if(BackColor != Color.Transparent)
+				e.Graphics.FillRectangle(new SolidBrush(BackColor), 0, 0, Size.Width, Size.Height);
+			e.Graphics.DrawString(Text, Font, new SolidBrush(ForeColor), new RectangleF(new Point(3, 3), Size));//, stringFormat);
 		}
 	}
 }

@@ -146,6 +146,8 @@ namespace dwarfGame
 		{
 			flags = FLAG.MOB_DEAD;
 			Game.WipeMob(this);
+			if(!Ally)
+				Game.AddKill();
 		}
 		
 		public bool CheckFlags(int flags)
@@ -276,6 +278,11 @@ namespace dwarfGame
 			act = action;
 			acting = doLock;
 			Sheet.StartAnimation(action, Dir, doLock, noCycle);
+		}
+		
+		public string GetPortraitID()
+		{
+			return Sheet.GetPortraitID();
 		}
 		
 		public int Check(string action, int mod = 0)

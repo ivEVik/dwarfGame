@@ -31,7 +31,7 @@ namespace dwarfGame
 				.ToArray();
 			
 			if(tileRows.Select(row => row.Length).Distinct().Count() != 1 || mobRows.Select(row => row.Length).Distinct().Count() != 1)
-				throw new Exception($"Invalid source template: {template.Name}");
+				throw new Exception($"Invalid source template: {template.MapID}");
 			
 			int mapX = tileRows[0].Count();
 			int mapY = tileRows.Count();

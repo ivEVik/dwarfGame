@@ -6,17 +6,35 @@ namespace dwarfGame
 {
 	public static class Game
 	{
-		private const string mapTestPreset = @"
-.....
-... .
-.....
-... .
-.. ..";
+		private static MapTemplate[] mapSequence;
+		private static int currentMap;
+		private static int kills;
+		
+		public static int ScoreKills {
+			get
+			{
+				return kills * CONST.SCORE_KILL;
+			}
+		}
+		public static int ScoreDwarves {
+			get
+			{
+				return Dwarves.Where(dwarf => dwarf != null && !dwarf.CheckFlags(FLAG.MOB_DEAD)).Count() * CONST.SCORE_DWARF;
+			}
+		}
+		public static int ScoreMaps {
+			get
+			{
+				return currentMap * CONST.SCORE_MAP;
+			}
+		}
 		
 		public static Random Randomiser;
 		
 		public static bool InGame;
+		public static bool InMainMenu;
 		public static bool PlayerTurn;
+		public static bool GameOver;
 		
 		public static Tile[,] Map;
 		public static int MapX;
@@ -92,28 +110,41 @@ namespace dwarfGame
 		{
 			MobsToRemove.Add(mob);
 			mob.GetTile().Mobs.Remove(mob);
+			
+			int hostileCount = Mobs.Where(mob => !mob.Ally).Count();
+			if(Dwarves.All(dwarf => dwarf == null || dwarf.CheckFlags(FLAG.MOB_DEAD)))
+				EndGame();
+			else if(hostileCount == 0 || (hostileCount == 1 && !mob.Ally))
+				AdvanceGame();
 		}
 		
 		public static void WipeCurrent()
 		{
 			CurrentMob = null;
+			
+			if(Dwarves.All(dwarf => dwarf == null || dwarf.CheckFlags(FLAG.MOB_DEAD)))
+				EndGame();
 		}
 		
 		public static void Initialise()
 		{
 			Randomiser = new Random();
+			InMainMenu = true;
 		}
 		
-		public static void NewGame(MapTemplate template)
+		public static void NewGame(int length)
 		{
+			InMainMenu = false;
+			mapSequence = GenerateMapSequence(length);
+			currentMap = -1;
+			
 			Dwarves = new Mob[3] {
 				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Urist", true),
 				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Rockbeard", true),
 				new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Ironhammer", true)
 			};
 			
-			LoadMap(template);
-			StartGame();
+			AdvanceGame();
 		}
 		
 		public static void LoadMap(MapTemplate template)
@@ -151,34 +182,67 @@ namespace dwarfGame
 			MapY = 0;
 			
 			CurrentMob = null;
-			Dwarves = null;
-		}
-		
-		public static void MakeMapFromString()
-		{
-			MobsToRemove = new List<Mob>();
-			Mobs = new List<Mob>();
-			TurnQueue = new Queue<Mob>();
-			MapMaker.MakeMapFromString(mapTestPreset);
-			
-			Mob mob = new Mob(TEMPLATE.MOB_DWARF_BRAWLER, "Urist", true);
-			//Mob mob = Dwarves[0];
-			Mobs.Add(mob);
-			Map[4, 4].SpawnMob(mob);
-			
-			mob = new Mob(TEMPLATE.MOB_SLIME, "Blob", false);
-			Mobs.Add(mob);
-			Map[2, 1].SpawnMob(mob);
-			
-			foreach(Mob m in Mobs)
-				TurnQueue.Enqueue(m);
-			PassTurn();
 		}
 		
 		public static void StartGame()
 		{
 			InGame = true;
 			StartPlayerTurn();
+		}
+		
+		public static void AddKill()
+		{
+			kills++;
+		}
+		
+		public static void ResetToMainMenu()
+		{
+			mapSequence = null;
+			GameOver = false;
+			InGame = false;
+			InMainMenu = true;
+			Dwarves = null;
+		}
+		
+		private static MapTemplate[] GenerateMapSequence(int length)
+		{
+			MapTemplate[] sequence = new MapTemplate[length];
+			List<int> usedMaps = new List<int>();
+			int count = 0;
+			
+			while(count < length)
+			{
+				int mapNumber = Randomiser.Next(0, TEMPLATE.MAPS.Count);
+				if(!usedMaps.Contains(mapNumber))
+				{
+					sequence[count++] = TEMPLATE.MAPS[mapNumber];
+					usedMaps.Add(mapNumber);
+				}
+			}
+			
+			return sequence;
+		}
+		
+		private static void EndGame()
+		{
+			GameOver = true;
+			InGame = false;
+		}
+		
+		private static void AdvanceGame()
+		{
+			if(++currentMap >= mapSequence.Length)
+			{
+				if(!Dwarves.Any(dwarf => dwarf != null || !dwarf.CheckFlags(FLAG.MOB_DEAD)))
+					currentMap--;
+				
+				EndGame();
+				return;
+			}
+			
+			DropMap();
+			LoadMap(mapSequence[currentMap]);
+			StartGame();
 		}
 	}
 }

@@ -101,6 +101,11 @@ namespace dwarfGame
 			return action;
 		}
 		
+		public string GetPortraitID()
+		{
+			return portraitID;
+		}
+		
 		private void IncrementFrame()
 		{
 			if(sprites[action][drawDir].Length > frame + 1)

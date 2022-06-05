@@ -24,6 +24,8 @@ namespace dwarfGame
 		private static int topBorder;
 		private static int bottomBorder;
 		
+		private List<GameButton> hotkeyedButtons;
+		
 		private Timer timer;
 		private bool drag;
 		//private bool dragStart;
@@ -34,6 +36,7 @@ namespace dwarfGame
 		
 		public MainForm()
 		{
+			hotkeyedButtons = new List<GameButton>();
 			fontCollection = new PrivateFontCollection();
 			fontCollection.AddFontFile("res/DiaryOfAn8BitMage-lYDD.ttf");
 			mainFontFamily = new FontFamily("Diary Of An 8-Bit Mage", fontCollection);
@@ -55,6 +58,10 @@ namespace dwarfGame
 				if(Game.InGame)
 					Game.Process();
 			};
+			timer.Tick += (sender, args) => {
+				if(Game.GameOver)
+					DisplayScores();
+			};
 			//timer.Interval = 15;
 			timer.Interval = 30;
 			timer.Start();
@@ -65,6 +72,7 @@ namespace dwarfGame
 			MouseUp += (sender, e) => MouseReleased(sender, e);
 			
 			KeyUp += (sender, e) => KeyPressDW(sender, e);
+			KeyUp += (sender, e) => KeyPressHotkey(sender, e);
 		}
 		
 		public void ResetView()
@@ -85,6 +93,7 @@ namespace dwarfGame
 		{
 			DropMenu();
 			Controls.Clear();
+			hotkeyedButtons.Clear();
 			string buttonBase = CONST.UI_BUTTON_BIG;
 			string buttonHover = CONST.UI_BUTTON_BIG_HOVER;
 			string buttonPress = CONST.UI_BUTTON_BIG_PRESS;
@@ -93,6 +102,7 @@ namespace dwarfGame
 			
 			Font font = new Font(mainFontFamily, 10);
 			GameButton button = new GameButton(
+				Keys.None,
 				textColour,
 				font,
 				"Новая игра",
@@ -100,7 +110,7 @@ namespace dwarfGame
 				buttonBase,
 				buttonHover,
 				buttonPress,
-				(sender, e) => { Game.NewGame(TEMPLATE.MAP_TEST); Controls.Clear(); ResetView(); });
+				(sender, e) => { Game.NewGame(1); Controls.Clear(); ResetView(); LoadGameUI(); });
 			button.Anchor = AnchorStyles.Top;
 			
 			
@@ -108,6 +118,7 @@ namespace dwarfGame
 			
 			point = new Point(point.X, point.Y + step);
 			button = new GameButton(
+				Keys.None,
 				textColour,
 				font,
 				"Выход",
@@ -125,12 +136,45 @@ namespace dwarfGame
 			if(openMenu == null)
 				return;
 			
+			foreach(GameButton control in openMenu.Controls)
+				if(control is GameButton && hotkeyedButtons.Contains(control))
+					hotkeyedButtons.Remove(control);
+			
 			Controls.Remove(openMenu);
 			openMenu = null;
+			Focus();
+		}
+		
+		private void DisplayScores()
+		{
+			BackgroundControl control = new BackgroundControl();
+			Controls.Add(control);
+			control.BackColor = Color.FromArgb(20, 16, 11);
+			control.ForeColor = textColour;
+			control.Size = new Size(400, 200);
+			control.Location = new Point((Size.Width - control.Size.Width) / 2, (Size.Height - control.Size.Height) / 2);
+			control.Anchor = AnchorStyles.Top;
+			control.Font = new Font(mainFontFamily, 12);
+			control.Text = $"Общий счёт: {Game.ScoreKills + Game.ScoreDwarves + Game.ScoreMaps}\n\nОчки за врагов: {Game.ScoreKills}\n\nОчки за выживших гномов: {Game.ScoreDwarves}\n\nОчки за пройденные карты: {Game.ScoreMaps}";
+			
+			GameButton button = new GameButton(
+				Keys.None,
+				textColour,
+				new Font(mainFontFamily, 10),
+				"Главное Меню",
+				new Point((control.Size.Width - Sprites.GetUI(CONST.UI_BUTTON_BIG).Width) / 2, control.Size.Height - Sprites.GetUI(CONST.UI_BUTTON_BIG).Height - 5),
+				CONST.UI_BUTTON_BIG,
+				CONST.UI_BUTTON_BIG_HOVER,
+				CONST.UI_BUTTON_BIG_PRESS,
+				(sender, e) => { Game.ResetToMainMenu(); InitUI(); });
+			
+			control.Controls.Add(button);
+			Game.GameOver = false;
 		}
 		
 		private void PauseMenu()
 		{
+			DropMenu();
 			string buttonBase = CONST.UI_BUTTON_BIG;
 			string buttonHover = CONST.UI_BUTTON_BIG_HOVER;
 			string buttonPress = CONST.UI_BUTTON_BIG_PRESS;
@@ -146,6 +190,7 @@ namespace dwarfGame
 			point = new Point(point.X - openMenu.Location.X, point.Y - openMenu.Location.Y);
 			step = step * 3 / 2;
 			GameButton button = new GameButton(
+				Keys.None,
 				textColour,
 				font,
 				"Продолжить",
@@ -160,6 +205,7 @@ namespace dwarfGame
 			
 			point = new Point(point.X, point.Y + step);
 			button = new GameButton(
+				Keys.None,
 				textColour,
 				font,
 				"Главное Меню",
@@ -167,9 +213,72 @@ namespace dwarfGame
 				buttonBase,
 				buttonHover,
 				buttonPress,
-				(sender, e) => { Game.DropMap(); InitUI(); });
+				(sender, e) => { Game.ResetToMainMenu(); InitUI(); });
 			
 			openMenu.Controls.Add(button);
+		}
+		
+		private void LoadGameUI()
+		{
+			DropMenu();
+			string buttonBase = CONST.UI_PORTRAIT;
+			string buttonHover = CONST.UI_PORTRAIT_HOVER;
+			string buttonPress = CONST.UI_PORTRAIT_PRESS;
+			
+			int width = Sprites.GetUI(CONST.UI_PORTRAIT).Width;
+			int height = Sprites.GetUI(CONST.UI_PORTRAIT).Height;
+			Font font = new Font(mainFontFamily, 10);
+			
+			Point point = new Point(5, 5);
+			
+			BackgroundControl portraits = new BackgroundControl();
+			portraits.Size = new Size(width * 3 + 20, height + 10);
+			portraits.Location = new Point(0, 0);
+			Controls.Add(portraits);
+			
+			GameButton button = new GameButton(
+				KEYBIND.KEY_DWARF_0,
+				textColour,
+				font,
+				"",
+				point,
+				buttonBase,
+				buttonHover,
+				buttonPress,
+				(sender, e) => { Game.Select(Game.Dwarves[0]); },
+				Game.Dwarves[0].GetPortraitID());
+			portraits.Controls.Add(button);
+			hotkeyedButtons.Add(button);
+			
+			point = new Point(point.X + width + 5, point.Y);
+			button = new GameButton(
+				KEYBIND.KEY_DWARF_1,
+				textColour,
+				font,
+				"",
+				point,
+				buttonBase,
+				buttonHover,
+				buttonPress,
+				(sender, e) => { Game.Select(Game.Dwarves[1]); },
+				Game.Dwarves[1].GetPortraitID());
+			portraits.Controls.Add(button);
+			hotkeyedButtons.Add(button);
+			
+			point = new Point(point.X + width + 5, point.Y);
+			button = new GameButton(
+				KEYBIND.KEY_DWARF_2,
+				textColour,
+				font,
+				"",
+				point,
+				buttonBase,
+				buttonHover,
+				buttonPress,
+				(sender, e) => { Game.Select(Game.Dwarves[2]); },
+				Game.Dwarves[2].GetPortraitID());
+			portraits.Controls.Add(button);
+			hotkeyedButtons.Add(button);
 		}
 		
 		protected override void OnLoad(EventArgs e)
@@ -194,7 +303,7 @@ namespace dwarfGame
 				DrawMobs(e, mobs);
 				DrawOverMob(e);
 			}
-			else
+			else if(Game.InMainMenu)
 			{
 				Bitmap sprite = Sprites.GetUI(CONST.UI_GAME_LOGO);
 				e.Graphics.DrawImage(sprite, new Point(Size.Width / 2 - sprite.Width / 2, 32));
@@ -435,6 +544,13 @@ namespace dwarfGame
 					return;
 				}
 			}
+		}
+		
+		private void KeyPressHotkey(object sender, KeyEventArgs e)
+		{
+			foreach(GameButton button in hotkeyedButtons)
+				if(button.CheckHotkey(e))
+					break;
 		}
 	}
 }

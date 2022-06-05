@@ -129,5 +129,47 @@
 				</frame>
 			</frames>
 		</anim>
+		<anim>
+			<action>stagger</action>
+			<dir>0</dir>
+			<frames>
+				<frame>
+					<image>dwarf-stagger-left-0</image>
+					<delay>2</delay>
+				</frame>
+				<frame>
+					<image>dwarf-stagger-left-1</image>
+					<delay>1</delay>
+				</frame>
+			</frames>
+		</anim>
+		<anim>
+			<action>stagger</action>
+			<dir>1</dir>
+			<frames>
+				<frame>
+					<image>dwarf-stagger-right-0</image>
+					<delay>2</delay>
+				</frame>
+				<frame>
+					<image>dwarf-stagger-right-1</image>
+					<delay>1</delay>
+				</frame>
+			</frames>
+		</anim>
+		<anim>
+			<action>stagger</action>
+			<dir>2</dir>
+			<frames>
+				<frame>
+					<image>dwarf-stagger-right-0</image>
+					<delay>2</delay>
+				</frame>
+				<frame>
+					<image>dwarf-stagger-right-1</image>
+					<delay>1</delay>
+				</frame>
+			</frames>
+		</anim>
 	</animations>
 </spritesheet>

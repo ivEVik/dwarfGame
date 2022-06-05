@@ -6,7 +6,7 @@ namespace dwarfGame
 {
 	public class MapTemplate
 	{
-		public readonly string Name;
+		public readonly string MapID;
 		
 		public readonly Dictionary<char, TileTemplate> TileDict;
 		public readonly Dictionary<char, MobTemplate> MobDict;
@@ -17,7 +17,7 @@ namespace dwarfGame
 		public readonly Point[] Dwarves;
 		
 		public MapTemplate(
-			string Name,
+			string MapID,
 			Dictionary<char, TileTemplate> TileDict,
 			Dictionary<char, MobTemplate> MobDict,
 			string TileString,
@@ -25,7 +25,8 @@ namespace dwarfGame
 			Point[] Dwarves
 		)
 		{
-			this.Name = Name;
+			TEMPLATE.MAPS.Add(this);
+			this.MapID = MapID;
 			
 			this.TileDict = TileDict;
 			this.MobDict = MobDict;

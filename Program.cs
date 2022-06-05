@@ -12,14 +12,9 @@ namespace dwarfGame
 		static void Main()
 		{
 			Initialise(3, 3);
-			//Game.LoadMap(TEMPLATE.MAP_TEST);
-			//Game.MakeMapFromString();
-			//Game.StartGame();
 			
 			Application.SetCompatibleTextRenderingDefault(false);
-			//Application.Exit();
 			Application.Run(new MainForm());
-			//Application.SetDefaultFont(new Font(mainFontFamily, 10));
 		}
 		
 		private static void Initialise(int scale, int uiScale)
