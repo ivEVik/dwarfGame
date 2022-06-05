@@ -85,35 +85,8 @@ namespace dwarfGame
 			Flags: FLAG.TILE_PASSABLE | FLAG.TILE_SELECTABLE
 		);
 		
-		
-		public static MapTemplate MAP_TEST = new MapTemplate(
-			MapID: "Test Map",
-			TileDict: MakeTileset(
-				Tuple.Create(' ', TILE_NULL),
-				Tuple.Create('.', TILE_BRICK)
-			),
-			MobDict: MakeMobset(
-				Tuple.Create('.', MOB_NULL),
-				Tuple.Create('S', MOB_SLIME)
-			),
-			TileString: @"
-.....
-.. ..
-.. ..
-..  .
-.....",
-			MobString: @"
-.S...
-.....
-.....
-.....
-.....",
-			//Dwarves: new Point[3] { new Point(12, 4), new Point(12, 4), new Point(12, 6) }
-			Dwarves: new Point[3] { new Point(2, 4), new Point(4, 4), new Point(4, 1) }
-		);
-		
-		public static MapTemplate MAP_TEST_BIG = new MapTemplate(
-			MapID: "Test Map",
+		public static MapTemplate MAP_PASSAGE = new MapTemplate(
+			MapID: "Long Passage",
 			TileDict: MakeTileset(
 				Tuple.Create(' ', TILE_NULL),
 				Tuple.Create('.', TILE_BRICK)
@@ -158,6 +131,40 @@ namespace dwarfGame
 .........",
 			//Dwarves: new Point[3] { new Point(12, 4), new Point(12, 4), new Point(12, 6) }
 			Dwarves: new Point[3] { new Point(2, 14), new Point(4, 14), new Point(6, 14) }
+		);
+		
+		public static MapTemplate MAP_SQUARE = new MapTemplate(
+			MapID: "Square",
+			TileDict: MakeTileset(
+				Tuple.Create(' ', TILE_NULL),
+				Tuple.Create('.', TILE_BRICK)
+			),
+			MobDict: MakeMobset(
+				Tuple.Create('.', MOB_NULL),
+				Tuple.Create('S', MOB_SLIME)
+			),
+			TileString: @"
+  .....  
+   ...   
+.   .   .
+.. ... ..
+.........
+.. ... ..
+.   .   .
+   ...   
+  .....  ",
+			MobString: @"
+.........
+....SS...
+.........
+.........
+.S......S
+.........
+.........
+.........
+....SS...",
+			//Dwarves: new Point[3] { new Point(12, 4), new Point(12, 4), new Point(12, 6) }
+			Dwarves: new Point[3] { new Point(4, 4), new Point(4, 5), new Point(3, 4) }
 		);
 		
 		
